@@ -4,7 +4,7 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/MessageBoard/models/config.php";
 class MemberDAO_PDO implements MemberDAO
 {
     //新增會員
-    public function insertMember($id, $password, $name, $email, $phone)
+    public function insertMember($account, $password, $name, $email, $phone)
     {
         try {
             $dbh = Config::getDBConnect();
@@ -13,7 +13,7 @@ class MemberDAO_PDO implements MemberDAO
                 (SELECT :userAccount WHERE (SELECT COUNT(`userID`) FROM `Members` AS m WHERE `userAccount`=:userAccount) = 0),
                 :userPassword, :userName, :userEmail, :userPhone, NOW(), NOW()
             );");
-            $sth->bindParam("userAccount", $id);
+            $sth->bindParam("userAccount", $account);
             $password = password_hash($password, PASSWORD_DEFAULT);
             $sth->bindParam("userPassword", $password);
             $sth->bindParam("userName", $name);
@@ -37,14 +37,12 @@ class MemberDAO_PDO implements MemberDAO
             $dbh = Config::getDBConnect();
             $dbh->beginTransaction();
             $sth = $dbh->prepare("UPDATE `Members` SET
-                                    `userPassword`=:userPassword,
                                     `userName`=:userName,
                                     `userEmail`=:userEmail,
                                     `userPhone`=:userPhone,
                                     `changeDate`=NOW()
                                     WHERE `userID`=:userID;");
             $sth->bindParam("userID", $member->getUserID());
-            $sth->bindParam("userPassword", $member->getUserPassword());
             $sth->bindParam("userName", $member->getUserName());
             $sth->bindParam("userEmail", $member->getUserEmail());
             $sth->bindParam("userPhone", $member->getUserPhone());

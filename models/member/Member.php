@@ -2,6 +2,7 @@
 class Member implements \JsonSerializable
 {
     private $_userID;
+    private $_userAccount;
     private $_userPassword;
     private $_userName;
     private $_userEmail;
@@ -16,6 +17,7 @@ class Member implements \JsonSerializable
         foreach ($request as $item) {
             $member = new Member();
             $member->setUserID($item['userID']);
+            $member->setUserAccount($item['userAccount']);
             $member->setUserName($item['userName']);
             $member->setUserEmail($item['userEmail']);
             $member->setUserPhone($item['userPhone']);
@@ -30,6 +32,7 @@ class Member implements \JsonSerializable
     {
         $member = new Member();
         $member->setUserID($request['userID']);
+        $member->setUserAccount($request['userAccount']);
         $member->setUserName($request['userName']);
         $member->setUserEmail($request['userEmail']);
         $member->setUserPhone($request['userPhone']);
@@ -44,10 +47,23 @@ class Member implements \JsonSerializable
     }
     public function setUserID($userID)
     {
-        if (!preg_match("/\w{6,30}/", $userID)) {
+        if (!preg_match("/\d/", $userID)) {
             throw new Exception("ID格式錯誤");
         }
         $this->_userID = $userID;
+        return true;
+    }
+
+    public function getUserAccount()
+    {
+        return $this->_userAccount;
+    }
+    public function setUserAccount($userAccount)
+    {
+        if (!preg_match("/\w{6,30}/", $userAccount)) {
+            throw new Exception("帳號格式錯誤");
+        }
+        $this->_userAccount = $userAccount;
         return true;
     }
 
@@ -57,6 +73,9 @@ class Member implements \JsonSerializable
     }
     public function setUserPassword($userPassword)
     {
+        if (!preg_match("/\w{6,30}/", $userPassword)) {
+            throw new Exception("密碼格式錯誤");
+        }
         $this->_userPassword = $userPassword;
         return true;
     }

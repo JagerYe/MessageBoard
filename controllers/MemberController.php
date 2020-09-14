@@ -1,7 +1,6 @@
 <?php
 class MemberController extends Controller
 {
-    private $_dao;
     public function __construct()
     {
         $this->requireDAO("member");
@@ -9,13 +8,21 @@ class MemberController extends Controller
 
     public function insertByObj($str)
     {
+        $jsonObj = json_decode($str);
+        $member = new Member();
+        $member->setUserAccount($jsonObj['userAccount']);
+        $member->setUserPassword($jsonObj['password']);
+        $member->setUserName($jsonObj['name']);
+        $member->setUserEmail($jsonObj['email']);
+        $member->setUserPhone($jsonObj['phone']);
 
-        if (!($member = $this->getJsonToModel("member", $str, true))) {
-            return false;
-        }
-
-
-        if (MemberService::getDAO()->insertMemberByObj($member)) {
+        if (MemberService::getDAO()->insertMember(
+            $member->getUserAccount(),
+            $member->getUserPassword(),
+            $member->getUserName(),
+            $member->getUserEmail(),
+            $member->getUserPhone()
+        )) {
             return true;
         }
 
@@ -24,24 +31,14 @@ class MemberController extends Controller
 
     public function update($str)
     {
-        if (!($member = $this->getJsonToModel("member", $str))) {
-            return false;
-        }
-
-        $password = $member->getUserPassword();
-        if (!preg_match("/\w{6,30}/", $password)) {
-            return false;
-        }
+        $jsonObj = json_decode($str);
+        $member = new Member();
+        $member->setUserID($_SESSION['userID']);
+        $member->setUserName($jsonObj['name']);
+        $member->setUserEmail($jsonObj['email']);
+        $member->setUserPhone($jsonObj['phone']);
 
         if (MemberService::getDAO()->updateMember($member)) {
-            return true;
-        }
-        return false;
-    }
-
-    public function delete($id)
-    {
-        if (MemberService::getDAO()->deleteMemberByID($id)) {
             return true;
         }
         return false;
@@ -58,8 +55,7 @@ class MemberController extends Controller
     public function getOne($id)
     {
         if ($member = MemberService::getDAO()->getOneMemberByID($id)) {
-            $a = json_encode($member);
-            return $a;
+            return json_encode($member);
         }
         return false;
     }
