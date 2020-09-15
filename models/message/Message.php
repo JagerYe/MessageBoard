@@ -6,6 +6,7 @@ class Message implements \JsonSerializable
     private $_userID;
     private $_creationDate;
     private $_message;
+    private $_userName;
 
     private $_dateRule = "/\d{1,4}-((1[0-2])|(0?[1-9]))-((3[01])|([12]\d)|(0?[1-9])) ((2[0-4])|([01]?\d)){1}\:[0-5][0-9]\:[0-5][0-9]/";
 
@@ -18,6 +19,7 @@ class Message implements \JsonSerializable
             $message->setBoardID($item['boardID']);
             $message->setMessage($item['message']);
             $message->setCreationDate($item['creationDate']);
+            $message->setUserName($item['userName']);
             $messages[] = $message;
         }
         return $messages;
@@ -31,6 +33,7 @@ class Message implements \JsonSerializable
         $message->setBoardID($request['boardID']);
         $message->setMessage($request['message']);
         $message->setCreationDate($request['creationDate']);
+        $message->setUserName($request['userName']);
         return $message;
     }
 
@@ -83,6 +86,16 @@ class Message implements \JsonSerializable
             throw new Exception("日期錯誤");
         }
         $this->_creationDate = $creationDate;
+        return true;
+    }
+
+    public function getUserName()
+    {
+        return $this->_userName;
+    }
+    public function setUserName($userName)
+    {
+        $this->_userName = $userName;
         return true;
     }
 

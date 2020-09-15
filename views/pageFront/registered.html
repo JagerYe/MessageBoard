@@ -45,8 +45,7 @@
 		}
 	});
 </script>
-<script type="module">
-	import { Member } from "../js/models/member.js";
+<script>
 
 	$(window).ready(() => {
 
@@ -66,36 +65,31 @@
 			}
 		});
 
-		$("#userID").change(() => {
+		$("#userAccount").change(() => {
 			$.ajax({
 				type: "GET",
-				url: `/MessageBoard/member/checkMemberExist?id=${$("#userID").val()}`
+				url: `/MessageBoard/member/checkMemberExist?id=${$("#userAccount").val()}`
 			}).then(function (e) {
 				if (e) {
 					$("#idCheckMessage").text("此帳號有人使用");
 				} else {
 					$("#idCheckMessage").empty();
 				}
-				if (!($("#userID").val()).match(/\w{6,30}/)) {
+				if (!($("#userAccount").val()).match(/\w{6,30}/)) {
 					$("#idCheckMessage").text("帳號格式錯誤");
 				}
 			});
 		});
 
 		$("#btnSub").click(() => {
-			let gmtStrIndex = (new Date()).toString().indexOf("GMT");
-			let timeZone = (new Date()).toString()
-				.substring(gmtStrIndex + 3, gmtStrIndex + 8).replace(/00/, ":00");
-			let member = new Member(
-				$("#userID").val(),
-				$("#userName").val(),
-				$("#userEmail").val(),
-				$("#userPhone").val(),
-				true,
-				"",
-				"",
-				timeZone,
-				$("#userPassword").val());
+
+			let member = {
+				"userAccount": $("#userAccount").val(),
+				"userName": $("#userName").val(),
+				"userEmail": $("#userEmail").val(),
+				"userPhone": $("#userPhone").val(),
+				"userPassword": $("#userPassword").val()
+			};
 			if ((member.userPassword != $("#userPassword_").val()) || !member.userPassword.match(/\w{6,30}/)) {
 				alert("密碼格式錯誤！");
 				return;
@@ -113,7 +107,7 @@
 				alert("電話格式錯誤");
 				return;
 			}
-			if (!member.userID.match(/\w{6,30}/)) {
+			if (!member.userAccount.match(/\w{6,30}/)) {
 				alert("帳號格式錯誤");
 				return;
 			}
@@ -170,7 +164,7 @@
 						<div class="input-group-prepend">
 							<span class="input-group-text"> <i class="fa fa-user"></i> </span>
 						</div>
-						<input id="userID" class="form-control" placeholder="請輸入帳號" type="text">
+						<input id="userAccount" class="form-control" placeholder="請輸入帳號" type="text">
 					</div> <!-- form-group// -->
 					<p class="form-group" id="idCheckMessage"></p>
 

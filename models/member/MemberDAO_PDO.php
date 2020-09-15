@@ -93,26 +93,29 @@ class MemberDAO_PDO implements MemberDAO
     {
         try {
             $dbh = Config::getDBConnect();
-            $sth = $dbh->prepare("SELECT COUNT(`userID`) FROM `members` WHERE `userAccount`=:userAccount;");
+            $sth = $dbh->prepare("SELECT COUNT(`userID`) AS `check`, `userID` FROM `members` WHERE `userAccount`=:userAccount;");
             $sth->bindParam("userAccount", $account);
             $sth->execute();
             $request = $sth->fetch(PDO::FETCH_ASSOC);
             if ($request['check'] != 1) {
                 throw new Exception("帳號密碼錯誤");
             }
+            $data = new ArrayObject();
+            $data->userID = $request['userID'];
 
             //取得密碼
             $sth = $dbh->prepare("SELECT `userPassword` FROM `members` WHERE `userID`=:userID");
-            $sth->bindParam("userID", $request['userID']);
+            $sth->bindParam("userID", $data->userID);
             $sth->execute();
             $request = $sth->fetch(PDO::FETCH_NUM);
             $sth = null;
         } catch (PDOException $err) {
-            echo ($err->__toString());
             return false;
         }
         $dbh = null;
-        return password_verify($password, $request['0']);
+        $data->check = password_verify($password, $request['0']);
+
+        return $data;
     }
 
     public function checkMemberExist($id)
@@ -120,8 +123,8 @@ class MemberDAO_PDO implements MemberDAO
         try {
             $dbh = Config::getDBConnect();
             $dbh->beginTransaction();
-            $sth = $dbh->prepare("SELECT COUNT(*) FROM `Members` WHERE `userID` = :userID;");
-            $sth->bindParam("userID", $id);
+            $sth = $dbh->prepare("SELECT COUNT(*) FROM `Members` WHERE `userAccount` = :userAccount;");
+            $sth->bindParam("userAccount", $id);
             $sth->execute();
             $request = $sth->fetch(PDO::FETCH_NUM);
         } catch (Exception $err) {

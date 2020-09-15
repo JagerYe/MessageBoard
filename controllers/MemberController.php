@@ -10,11 +10,11 @@ class MemberController extends Controller
     {
         $jsonObj = json_decode($str);
         $member = new Member();
-        $member->setUserAccount($jsonObj['userAccount']);
-        $member->setUserPassword($jsonObj['password']);
-        $member->setUserName($jsonObj['name']);
-        $member->setUserEmail($jsonObj['email']);
-        $member->setUserPhone($jsonObj['phone']);
+        $member->setUserAccount($jsonObj->userAccount);
+        $member->setUserPassword($jsonObj->userPassword);
+        $member->setUserName($jsonObj->userName);
+        $member->setUserEmail($jsonObj->userEmail);
+        $member->setUserPhone($jsonObj->userPhone);
 
         if (MemberService::getDAO()->insertMember(
             $member->getUserAccount(),
@@ -33,7 +33,7 @@ class MemberController extends Controller
     {
         $jsonObj = json_decode($str);
         $member = new Member();
-        $member->setUserID($_SESSION['userID']);
+        $member->setUserAccount($_SESSION['userAccount']);
         $member->setUserName($jsonObj['name']);
         $member->setUserEmail($jsonObj['email']);
         $member->setUserPhone($jsonObj['phone']);
@@ -60,13 +60,14 @@ class MemberController extends Controller
         return false;
     }
 
-    public function login($id, $password)
+    public function login($userAccount, $password)
     {
-        if (MemberService::getDAO()->doLogin($id, $password) == 1) {
-            $member = MemberService::getDAO()->getOneMemberByID($id);
+        if (($data = MemberService::getDAO()->doLogin($userAccount, $password))->check) {
+            $member = MemberService::getDAO()->getOneMemberByID($data->userID);
 
-            $_SESSION["userID"] = $member->getUserID();
+            $_SESSION["userAccount"] = $member->getUserAccount();
             $_SESSION["userName"] = $member->getUserName();
+            $_SESSION["userID"] = $member->getUserID();
 
             return true;
         }
@@ -81,10 +82,19 @@ class MemberController extends Controller
         return false;
     }
 
+    public function getSessionUserID()
+    {
+        if (isset($_SESSION['userID'])) {
+            return $_SESSION['userID'];
+        }
+        return false;
+    }
+
     public function logout()
     {
-        unset($_SESSION['userID']);
+        unset($_SESSION['userAccount']);
         unset($_SESSION['userName']);
+        unset($_SESSION['userID']);
     }
 
     public function checkMemberExist($id)

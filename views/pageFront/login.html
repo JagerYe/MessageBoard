@@ -30,35 +30,34 @@
 	<!-- ajax -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
+
 <script>
 	//檢查是否要登出
-	$("body").css("display", "none");
-	$.ajax({
-		type: "GET",
-		url: "/MessageBoard/member/getSessionUserName"
-	}).then(function (e) {
-		if (e) {
-			$.ajax({
-				type: "GET",
-				url: "/MessageBoard/member/logout"
-			}).then(() => {
-				window.location.href = "/MessageBoard/views/pageFront/index_.html";
-			});
-		} else {
-			$("body").css("display", "inline");
-		}
-	});
-</script>
-<script type="module">
-	import { Member } from "../js/models/member.js";
-
+	function checkIsLogOut() {
+		$("body").css("display", "none");
+		$.ajax({
+			type: "GET",
+			url: "/MessageBoard/member/getSessionUserName"
+		}).then(function (e) {
+			if (e) {
+				$.ajax({
+					type: "GET",
+					url: "/MessageBoard/member/logout"
+				}).then(() => {
+					window.location.href = "/MessageBoard/views/pageFront/index_.html";
+				});
+			} else {
+				$("body").css("display", "inline");
+			}
+		});
+	}
 
 	$(window).ready(() => {
-
+		checkIsLogOut();
 		//登入按鈕事件
 		$("#login").click(() => {
 			let data = {
-				0: $("#userID").val(),
+				0: $("#userAccount").val(),
 				1: $("#userPassword").val()
 			};
 			$.ajax({
@@ -81,8 +80,8 @@
 		<a href="/MessageBoard/views/pageFront/index_.html"><img class="mb-4" src="/MessageBoard/views/img/logo.png"
 				alt="回首頁" style="background-color: black;"></a>
 		<h1 class="h3 mb-3 font-weight-normal">會員登入</h1>
-		<label for="userID" class="sr-only">帳號</label>
-		<input type="text" id="userID" name="userID" class="form-control" placeholder="帳號" required autofocus>
+		<label for="userAccount" class="sr-only">帳號</label>
+		<input type="text" id="userAccount" name="userAccount" class="form-control" placeholder="帳號" required autofocus>
 		<label for="userPassword" class="sr-only">密碼</label>
 		<input type="password" id="userPassword" name="userPassword" class="form-control" placeholder="密碼" required>
 

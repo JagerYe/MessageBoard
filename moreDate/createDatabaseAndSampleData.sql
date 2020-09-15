@@ -33,7 +33,7 @@ CREATE TABLE `Messages` (
     `userID` INT NOT NULL,
     `creationDate` datetime NOT NULL,
     `message` TEXT NOT NULL,
-    PRIMARY KEY (`messageID`),
+    PRIMARY KEY (`messageID`,`boardID`),
     FOREIGN KEY (`userID`) REFERENCES `Members`(`userID`),
     FOREIGN KEY (`boardID`) REFERENCES `Boards`(`boardID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

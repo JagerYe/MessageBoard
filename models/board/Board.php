@@ -40,7 +40,7 @@ class Board implements \JsonSerializable
     }
     public function setUserID($userID)
     {
-        if (!preg_match("/\w{6,30}/", $userID)) {
+        if (!preg_match("/\d/", $userID)) {
             throw new Exception("ID格式錯誤");
         }
         $this->_userID = $userID;
@@ -66,7 +66,7 @@ class Board implements \JsonSerializable
     }
     public function setAuthority($authority)
     {
-        if ($authority == null) {
+        if ($authority === null) {
             throw new Exception("權限錯誤");
         }
         $this->_authority = $authority;

@@ -8,7 +8,7 @@
 	<meta name="author" content="">
 	<link rel="icon" href="/MessageBoard/views/img/logo.png">
 
-	<title>網銀</title>
+	<title>留言板</title>
 
 	<!-- Bootstrap core CSS -->
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -32,212 +32,162 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <style>
-	.list li {
-		margin: 20px;
+	.oneMessage {
+		margin: 10px;
+	}
+
+	.newMessage {
+		width: 100%;
+	}
+
+	textarea {
+		resize: none;
+		/* 鎖住使用者高度控制 */
+		width: 100%;
+		height: 100%;
 	}
 </style>
-<script src="/MessageBoard/views/js/viewModels/showViewModel.js"></script>
-<script src="/MessageBoard/views/js/viewModels/transactionRecordViewModel.js"></script>
-<script type="module">
-	import { TransactionRecord } from "../js/models/transactionRecord.js";
-	import { Member } from "../js/models/member.js";
 
-	let gmtStrIndex = (new Date()).toString().indexOf("GMT");
+<script src="../js/viewModels/showViewModel.js"></script>
+<script src="../js/viewModels/messageViewModel.js"></script>
+<script>
 	let name;
-	let balance = 0;
-	let showBalance = true;
-	let records;
-	let index = 0;
-	let month;
+	$.ajax({
+		type: "GET",
+		url: "/MessageBoard/member/getSessionUserName"
+	}).then(function (e) {
+		name = e;
+	});
 
-	$("body").css("visibility", "hidden");
+	let userID = -1;
+
+
+
+
 	$(window).ready(() => {
+		$("body").css("visibility", "hidden");
 		$.ajax({
 			type: "GET",
-			url: "/MessageBoard/member/getSessionUserName"
+			url: "/MessageBoard/member/getSessionUserID"
 		}).then(function (e) {
-			name = e;
-			if (e) {
-				updateBalance();
-				$("#mainShow").html(getShowIndex(name));
-				$("#featuresShow").html(getShowMenu());
-				$("#showUserName").text(name);
+			if (e >= 1) {
+				userID = e;
 				$("#showLogin").text("登出");
-				$("#showRegistered").css("display", "none");
-				setNavigationOnclick(name);
+				$("#showRegistered").empty();
+				$("#showUserName").text(name);
 			} else {
-				$("#mainShow").html(getShowUnlogin());
-				setNavigationOnclick();
+				$(".addMainMassage").empty();
 			}
+
+			readySetListeners();
 
 			$("body").css("visibility", "visible");
 		});
 
-
+		updateMessage();
 	});
 
-	//更新餘額動作
-	function updateBalance() {
+	function updateMessage() {
+		$("#massageShow").empty();
 		$.ajax({
 			type: "GET",
-			url: "/MessageBoard/transactionRecord/getUserBalance"
+			url: "/MessageBoard/message/getPublicBoard"
 		}).then(function (e) {
-			if (showBalance) {
-				e = e.replace("\"", "").replace("\"", "");
-				if (!e) e = "0";
-				balance = parseInt(e) + " 點按這隱藏餘額";
-			} else {
-				balance = "****** 點按這顯示餘額";
+			let jsonArr = JSON.parse(e);
+			for (let jsonObj of jsonArr) {
+				getMessage(jsonObj);
 			}
 
-			$("#showBalance").text(`目前餘額：${balance}`);
+		});
+	}
+
+	function getMessage(jsonObj) {
+
+		$.ajax({
+			type: "GET",
+			url: `/MessageBoard/message/getBoardMessages?id=${jsonObj._boardID}&authority=?${jsonObj._authority}`
+		}).then(function (e) {
+			let jsonMessageArr = JSON.parse(e);
+			for (let key in jsonMessageArr) {
+				if (key == 0) {
+					$("#massageShow").append(getMainMessageView(
+						jsonMessageArr[key]._userID,
+						jsonObj._boardID,
+						jsonMessageArr[key]._userName,
+						jsonMessageArr[key]._message));
+					continue;
+				}
+
+				$(`#message${jsonObj._boardID}`).append(getMessageView(
+					jsonMessageArr[key]._userID,
+					jsonMessageArr[key]._userName,
+					jsonMessageArr[key]._message));
+			}
+
+			if (userID > 0) {
+				addMessageInputGrid(jsonObj._boardID);
+			}
 		});
 
 	}
 
-	//重設click事件
-	function setNavigationOnclick() {
-		$(".deposit").off("click");
-		$(".withdrawal").off("click");
-		$(".showDetail").off("click");
-		$("#showBalance").off("click");
-
-		//顯示餘額動作
-		$("#showBalance").click(() => {
-			showBalance = !showBalance;
-			updateBalance();
+	//初始化監聽器
+	function readySetListeners() {
+		$("textarea").on('input', function (e) {
+			$(this).height("");
+			$(this).height(this.scrollHeight);
 		});
 
-		//存入動作
-		$(".deposit").click(() => {
-			transaction(false);
-		});
+		$("#subMain").click(() => {
 
-		//提出動作
-		$(".withdrawal").click(() => {
-			transaction(true);
-		});
-
-		//交易明細
-		$(".showDetail").click(() => {
-			checkLogin();
+			let board = { authority: 0 };
+			let message = { message: $("#mainMessage").val() };
+			let data = {
+				'board': board,
+				'message': message
+			};
 			$.ajax({
-				type: "GET",
-				url: "/MessageBoard/transactionRecord/getUserHistoricalRecord"
+				type: "POST",
+				url: "/MessageBoard/message/addMainMessage",
+				data: { 0: JSON.stringify(data) }
 			}).then(function (e) {
-				let jsonArr = JSON.parse(e);
-				records = new Array();
-				jsonArr.forEach(jsonObj => {
-					let record = new TransactionRecord(
-						jsonObj._recordID,
-						jsonObj._transactionAmount,
-						jsonObj._userUTC,
-						jsonObj._userID,
-						jsonObj._currentAmount,
-						jsonObj._transactionDate,
-						jsonObj._transactionChangeDate
-					);
-					records.push(record);
-				});
-
-				if (!e) {
-					alert("沒有交易紀錄！");
-					return;
+				if (e >= 1) {
+					$("#massageShow").prepend(getMainMessageView(userID, e, name, message.message));
+					addMessageInputGrid(e);
 				}
-				$("#featuresShow").empty();
-				index = 0;
-				showDetail();
 			});
 		});
 	}
 
-	//生成交易明細用
-	function showDetail() {
-		for (let firstIndex = index; index < records.length; index++) {
-			let record = records[index];
-			let month_ = record.transactionDate.substring(5, 7);
-			let day = record.transactionDate.substring(8, 10);
-			let time = record.transactionDate.substring(11, record.transactionDate.length);
-			let deposit;
-			let withdrawal;
-
-			if (firstIndex == index) {
-				month = month_;
-				$(".showMoreRecord").empty().css("display", "none");
-				$("#featuresShow").append(getMonthShow(month));
-			}
-
-			if (month != month_) {
-				$(`#showMoreRecord${month}`).css("display", "inline").click(() => {
-					showDetail();
-				});
-				month = month_;
-				break;
-			}
-			if (record.transactionAmount < 0) {
-				deposit = " ";
-				withdrawal = -record.transactionAmount;
-			} else {
-				deposit = record.transactionAmount;
-				withdrawal = " ";
-			}
-			$(`#day${month}`).append(getDayShow(day, time, deposit, withdrawal, record.currentAmount));
-
-		}
-
-
-	}
-
-	//交易動作
-	function transaction(isOutput) {
-		checkLogin();
-		$("#featuresShow").html(getShowDepositAndWithdrawal(isOutput));
-		if (isOutput) {
-			$("#inputAmount").attr({ "max": parseInt(balance) });
-		}
-		$("#btnSub").click(() => {
-			let amount = (isOutput) ? $("#inputAmount").val() * -1 : $("#inputAmount").val();
-			let requstStr = (isOutput) ? "提出" : "存入";
-			let timeZone = (new Date()).toString()
-				.substring(gmtStrIndex + 3, gmtStrIndex + 8).replace(/00/, ":00");
-
-			let record = new TransactionRecord(
-				"???",
-				amount,
-				timeZone
-			);
-			let postDate = {
-				jsonStr: JSON.stringify(record)
+	function addMessageInputGrid(id) {
+		$(`#message${id}`).append(getAddMessageView(id));
+		$(`#subMessage${id}`).click(() => {
+			let data = {
+				'boardID': sonObj._boardID,
+				'message': $(`#addMessage${id}`).val()
 			};
+
 			$.ajax({
 				type: "POST",
-				url: "/MessageBoard/transactionRecord/insertByObj",
-				data: postDate
-			}).then(function (e) {
-				if (e) {
-					alert(`${requstStr}成功`);
-					history.go(0);
-				} else {
-					updateBalance();
-					alert(`${requstStr}失敗`);
-				}
+				url: "/MessageBoard/message/addMessage",
+				data: { 0: JSON.stringify(data) }
 			});
 		});
 	}
 
 	//判斷是否登入
-	function checkLogin() {
-		if (!name) {
-			alert("您尚未登入，請先登入");
-			window.location.href = "login.html";
-		}
-	}
+	// function checkLogin() {
+	// 	if (!name) {
+	// 		alert("您尚未登入，請先登入");
+	// 		window.location.href = "login.html";
+	// 	}
+	// }
 </script>
 
 <body>
 
 	<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-		<a class="navbar-brand" href="/MessageBoard/views/pageFront/index_.html">網銀</a>
+		<a class="navbar-brand" href="/MessageBoard/views/pageFront/index_.html">留言板</a>
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
 			aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
@@ -245,15 +195,15 @@
 
 		<div class="collapse navbar-collapse" id="navbarsExampleDefault">
 			<ul class="navbar-nav mr-auto">
-				<li class="nav-item active">
-					<div class="btn nav-link deposit">存款</div>
+				<!-- <li class="nav-item active">
+					<div class="btn nav-link">存款</div>
 				</li>
 				<li class="nav-item active">
-					<div class="btn nav-link withdrawal">提款</div>
+					<div class="btn nav-link">提款</div>
 				</li>
 				<li class="nav-item active">
-					<div class="btn nav-link showDetail">查詢明細</div>
-				</li>
+					<div class="btn nav-link">查詢明細</div>
+				</li> -->
 
 			</ul>
 			<ul class="navbar-nav my-2 my-lg-0">
@@ -263,8 +213,8 @@
 				<li class="nav-item active">
 					<a class="nav-link" href="login.html" id="showLogin">登入</a>
 				</li>
-				<li class="nav-item active">
-					<a class="nav-link" href="registered.html" id="showRegistered">註冊</a>
+				<li class="nav-item active" id="showRegistered">
+					<a class="nav-link" href="registered.html">註冊</a>
 				</li>
 			</ul>
 		</div>
@@ -272,13 +222,22 @@
 
 	<main role="main" class="container">
 
-
 		<div class="row">
-			<div class="col-1"></div>
-			<div class="col" id="mainShow">
-				<!--主要顯示區-->
+			<div class="col-2"></div>
+			<div class="col-8">
+				<div class="addMainMassage">
+					<h2>來說點什麼吧</h2>
+					<textarea id="mainMessage" style="width: 100%;"></textarea>
+					<div>
+						<button class="btn btn-outline-success" style="visibility:hidden">送出</button>
+						<button class="float-right btn btn-outline-success" type="button" id="subMain">送出</button>
+					</div>
+					<br>
+				</div>
+
+				<div id="massageShow"></div>
 			</div>
-			<div class="col-1"></div>
+			<div class="col-2"></div>
 		</div>
 
 

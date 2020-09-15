@@ -4,18 +4,15 @@ require_once "{$_SERVER['DOCUMENT_ROOT']}/MessageBoard/models/config.php";
 class OldMessageDAO_PDO implements OldMessageDAO
 {
     //新增
-    public function insertOldMessage($messageID, $creationDate, $message)
+    public function insertOldMessage($messageID, $creationDate, $message, $dbh)
     {
         try {
-            $dbh = Config::getDBConnect();
-            $dbh->beginTransaction();
             $sth = $dbh->prepare("INSERT INTO `oldmessage`(`messageID`, `creationDate`, `message`)
                                     VALUES (:messageID,:creationDate,:message);");
-            $sth->bindParam("messageID", $boardID);
+            $sth->bindParam("messageID", $messageID);
             $sth->bindParam("creationDate", $creationDate);
             $sth->bindParam("message", $message);
             $sth->execute();
-            $dbh->commit();
             $sth = null;
         } catch (PDOException $err) {
             $dbh->rollBack();

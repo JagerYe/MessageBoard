@@ -1,8 +1,9 @@
 <?php
 interface MessageDAO
 {
-    public function insertMessage($boardID, $userID, $message);
+    public function insertMessage($boardID, $userID, $message, $dbh = null);
     public function updateMessage($message);
     public function getOneMessageByID($id);
-    public function getAllUserMessageByBoardID($id);
+    public function getAllMessageByBoardID($id);
+    public function deleteMessageByID($id);
 }
