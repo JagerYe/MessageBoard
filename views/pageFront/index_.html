@@ -126,6 +126,52 @@
 		});
 	}
 
+	function getTiemDifference(date) {
+		let time = (new Date(new Date() - new Date(date))).getTime();
+		let count = 0;
+		time /= 1000;//秒
+
+		if (time < 1) {
+			return "剛剛";
+		}
+
+		if (time < 60) {
+			return Math.floor(time) + "秒前";
+		}
+
+		time /= 60;//分
+		if (time < 60) {
+			return Math.floor(time) + "分前";
+		}
+
+		time /= 60;//小時
+		if (time < 24) {
+			return Math.floor(time) + "小時前";
+		}
+
+		time /= 24;//天
+		if (time < 7) {
+			return Math.floor(time) + "天前";
+		}
+
+		time /= 7;//週
+		if (time < 7) {
+			return Math.floor(time) + "週前";
+		}
+
+		time /= 4;//月
+		if (time < 4) {
+			return Math.floor(time) + "月前";
+		}
+
+		time /= 12;//年
+		if (time < 4) {
+			return Math.floor(time) + "月前";
+		}
+
+
+	}
+
 	function getBoardMessages(boardID, authority = 0) {
 
 		$.ajax({
@@ -135,6 +181,11 @@
 			let jsonMessageArr = JSON.parse(e);
 			for (let key in jsonMessageArr) {
 				isMyself = (jsonMessageArr[key]._userID == userID);
+				// alert(jsonMessageArr[key]._changeDate);
+				let newTiem = new Date();
+				let oderTime = new Date(jsonMessageArr[key]._changeDate);
+				let Date_C = new Date(newTiem - oderTime);
+				alert("兩個時間差距為" + Math.floor(Date_C.getTime() / 3600000) + "小時 " + Date_C.getUTCMinutes() + "分 " + Date_C.getUTCSeconds() + "秒");
 				if (key == 0) {
 					$("#massageShow").append(getMainMessageView(
 						jsonMessageArr[key]._userID,

@@ -60,7 +60,7 @@ class MessageDAO_PDO implements MessageDAO
     {
         try {
             $dbh = Config::getDBConnect();
-            $sth = $dbh->prepare("SELECT `messageID`, `boardID`, mes.`userID`, mes.`creationDate`, `message`, `userName` FROM `Messages` AS mes
+            $sth = $dbh->prepare("SELECT `messageID`, `boardID`, mes.`userID`, mes.`creationDate`, mes.`changeDate`, `message`, `userName` FROM `Messages` AS mes
                 INNER JOIN `Members` AS mem ON mes.`userID`=mem.`userID`
                 WHERE `boardID`=:boardID
                 ORDER BY `messageID`;");
