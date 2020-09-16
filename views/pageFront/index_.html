@@ -46,6 +46,23 @@
 		width: 100%;
 		height: 100%;
 	}
+
+	.mainMessage {
+		margin: 20px;
+	}
+
+	.mainMessage button {
+		margin: 3px;
+	}
+
+	div {
+		width: 100%;
+	}
+
+	/*文字自動換行*/
+	.AutoNewline {
+		word-break: break-all;
+	}
 </style>
 
 <script src="../js/viewModels/showViewModel.js"></script>
@@ -60,6 +77,14 @@
 	});
 
 	let userID = -1;
+
+	//設定textarea模式
+	function setTextareaMode() {
+		$("textarea").on('input', function (e) {
+			$(this).height("");
+			$(this).height(this.scrollHeight);
+		});
+	}
 
 
 
@@ -84,10 +109,10 @@
 			$("body").css("visibility", "visible");
 		});
 
-		updateMessage();
+		updateMessageView();
 	});
 
-	function updateMessage() {
+	function updateMessageView() {
 		$("#massageShow").empty();
 		$.ajax({
 			type: "GET",
@@ -95,37 +120,49 @@
 		}).then(function (e) {
 			let jsonArr = JSON.parse(e);
 			for (let jsonObj of jsonArr) {
-				getMessage(jsonObj);
+				getBoardMessages(jsonObj._boardID, jsonObj._authority);
 			}
 
 		});
 	}
 
-	function getMessage(jsonObj) {
+	function getBoardMessages(boardID, authority = 0) {
 
 		$.ajax({
 			type: "GET",
-			url: `/MessageBoard/message/getBoardMessages?id=${jsonObj._boardID}&authority=?${jsonObj._authority}`
+			url: `/MessageBoard/message/getBoardMessages?id=${boardID}&authority=?${authority}`
 		}).then(function (e) {
 			let jsonMessageArr = JSON.parse(e);
 			for (let key in jsonMessageArr) {
+				isMyself = (jsonMessageArr[key]._userID == userID);
 				if (key == 0) {
 					$("#massageShow").append(getMainMessageView(
 						jsonMessageArr[key]._userID,
-						jsonObj._boardID,
+						boardID,
 						jsonMessageArr[key]._userName,
-						jsonMessageArr[key]._message));
-					continue;
+						jsonMessageArr[key]._message,
+						isMyself,
+						jsonMessageArr[key]._messageID));
+
+				} else {
+					$(`#boardMessage${boardID}`).append(getMessageView(
+						jsonMessageArr[key]._userID,
+						jsonMessageArr[key]._userName,
+						jsonMessageArr[key]._message,
+						isMyself,
+						jsonMessageArr[key]._messageID));
 				}
 
-				$(`#message${jsonObj._boardID}`).append(getMessageView(
-					jsonMessageArr[key]._userID,
-					jsonMessageArr[key]._userName,
-					jsonMessageArr[key]._message));
+				//如果是自己的就可以修改及刪除
+				if (isMyself) {
+					addDeleteAndUpdateListener(jsonMessageArr[key]._messageID);
+				}
+
 			}
 
+			//新增輸入面板
 			if (userID > 0) {
-				addMessageInputGrid(jsonObj._boardID);
+				addMessageInputGrid(boardID);
 			}
 		});
 
@@ -133,11 +170,7 @@
 
 	//初始化監聽器
 	function readySetListeners() {
-		$("textarea").on('input', function (e) {
-			$(this).height("");
-			$(this).height(this.scrollHeight);
-		});
-
+		setTextareaMode();
 		$("#subMain").click(() => {
 
 			let board = { authority: 0 };
@@ -151,27 +184,112 @@
 				url: "/MessageBoard/message/addMainMessage",
 				data: { 0: JSON.stringify(data) }
 			}).then(function (e) {
-				if (e >= 1) {
-					$("#massageShow").prepend(getMainMessageView(userID, e, name, message.message));
-					addMessageInputGrid(e);
+				jsonArr = JSON.parse(e);
+				let boardID = jsonArr.boardID;
+				let messageID = jsonArr.messageID;
+				if (boardID >= 1) {
+					$("#massageShow").prepend(getMainMessageView(
+						userID,
+						boardID,
+						name,
+						message.message,
+						true,
+						messageID
+					));
+					addMessageInputGrid(boardID);
 				}
 			});
 		});
 	}
 
-	function addMessageInputGrid(id) {
-		$(`#message${id}`).append(getAddMessageView(id));
-		$(`#subMessage${id}`).click(() => {
+	function addMessageInputGrid(boardID) {
+		$(`#messageInputGrid${boardID}`).append(getInputGridMessageView(boardID));
+		$(`#subMessage${boardID}`).click(() => {
+			let message = $(`#addMessage${boardID}`).val();
 			let data = {
-				'boardID': sonObj._boardID,
-				'message': $(`#addMessage${id}`).val()
+				'boardID': boardID,
+				'message': message
 			};
 
 			$.ajax({
 				type: "POST",
 				url: "/MessageBoard/message/addMessage",
 				data: { 0: JSON.stringify(data) }
+			}).then(function (messageID) {
+				if (messageID >= 1) {
+					$(`#boardMessage${boardID}`).append(getMessageView(
+						userID,
+						name,
+						message,
+						true,
+						messageID));
+					addDeleteAndUpdateListener(messageID);
+					$(`#addMessage${boardID}`).val("");
+				}
 			});
+		});
+		setTextareaMode();
+	}
+
+	//設定刪除及修改監聽器
+	function addDeleteAndUpdateListener(messageID) {
+
+		//刪除按鈕
+		$(`#deleteMessage${messageID}`).click(() => {
+			$.ajax({
+				type: "DELETE",
+				url: "/MessageBoard/message/deleteMessage",
+				data: { 0: messageID }
+			}).then(function (e) {
+				let jsonArr = JSON.parse(e);
+				switch (key = Object.keys(jsonArr)[0]) {
+					case "message":
+						$(`#message${jsonArr[key]}`).remove();
+						break;
+					case "board":
+						$(`#mainMessage${jsonArr[key]}`).remove();
+						break;
+				}
+			});
+		});
+
+		//修改按鈕
+		$(`#updateMessageBtn${messageID}`).click(function () {
+
+			// let thisHtmlParent = $(this).parent().parent();
+			// let saveMessageStatus = thisHtmlParent.html();
+			// alert(saveMessageStatus);
+
+			$(`#text${messageID}`).html(getInputGridMessageView(messageID, $(`#text${messageID}`).children().last().text(), true));
+			$(this).parent().children("button").remove();
+
+			//上傳更新按鈕
+			$(`#updateMessageSub${messageID}`).click(() => {
+				let data = {
+					"messageID": messageID,
+					"message": $(`#updateMessage${messageID}`).val()
+				};
+
+				$.ajax({
+					type: "PUT",
+					url: "/MessageBoard/message/updateMessage",
+					data: { 0: JSON.stringify(data) }
+				}).then(function (e) {
+					if (e == 1) {
+						updateMessageView();
+					} else {
+						alert("更新失敗");
+					}
+				});
+			});
+
+			//取消按鈕
+			$(`#updateCancelBtn${messageID}`).click(() => {
+				// thisHtmlParent.html(saveMessageStatus);
+				updateMessageView();
+			});
+
+			setTextareaMode();
 		});
 	}
 
@@ -227,7 +345,7 @@
 			<div class="col-8">
 				<div class="addMainMassage">
 					<h2>來說點什麼吧</h2>
-					<textarea id="mainMessage" style="width: 100%;"></textarea>
+					<textarea id="mainMessage"></textarea>
 					<div>
 						<button class="btn btn-outline-success" style="visibility:hidden">送出</button>
 						<button class="float-right btn btn-outline-success" type="button" id="subMain">送出</button>
