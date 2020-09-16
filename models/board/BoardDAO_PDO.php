@@ -1,6 +1,5 @@
 <?php
 require_once "{$_SERVER['DOCUMENT_ROOT']}/MessageBoard/models/board/BoardDAO_Interface.php";
-require_once "{$_SERVER['DOCUMENT_ROOT']}/MessageBoard/models/message/MessageService.php";
 require_once "{$_SERVER['DOCUMENT_ROOT']}/MessageBoard/models/config.php";
 class BoardDAO_PDO implements BoardDAO
 {
@@ -18,16 +17,14 @@ class BoardDAO_PDO implements BoardDAO
             $id = $dbh->lastInsertId();
 
             $messageDAO = MessageService::getDAO();
-            if (!($messageDAO->insertMessage(
-                $id,
-                $userID,
-                $message->getMessage(),
-                $dbh
-            ))) {
+            $messageID = $messageDAO->insertMessage($id, $userID, $message->getMessage(), $dbh);
+            if ($messageID <= 0) {
                 throw new Exception("新增錯誤");
             }
 
             $sth = null;
+            $data['boardID'] = $id;
+            $data['messageID'] = $messageID;
         } catch (PDOException $err) {
             $dbh->rollBack();
             return false;
@@ -35,7 +32,8 @@ class BoardDAO_PDO implements BoardDAO
             return false;
         }
         $dbh = null;
-        return $id;
+
+        return $data;
     }
 
     //更新
@@ -111,5 +109,31 @@ class BoardDAO_PDO implements BoardDAO
         }
         $dbh = null;
         return Board::dbDataToModel($request);
+    }
+
+    //刪除
+    public function deleteByID($id)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $dbh->beginTransaction();
+            if (!(MessageService::getDAO()->deleteMessageByBoardID($id, $dbh))) {
+                throw new Exception("刪除留言錯誤");
+            }
+            $sth = $dbh->prepare("DELETE FROM `Boards` WHERE `boardID`=:boardID");
+            $sth->bindParam("boardID", $id);
+            $sth->execute();
+            $dbh->commit();
+            $request = $sth->rowCount();
+            $sth = null;
+        } catch (PDOException $err) {
+            $dbh->rollBack();
+            $dbh = null;
+            return false;
+        } catch (Exception $err) {
+            return false;
+        }
+        $dbh = null;
+        return $request > 0;
     }
 }

@@ -32,6 +32,7 @@ CREATE TABLE `Messages` (
     `boardID` int NOT NULL,
     `userID` INT NOT NULL,
     `creationDate` datetime NOT NULL,
+    `changeDate` datetime NOT NULL,
     `message` TEXT NOT NULL,
     PRIMARY KEY (`messageID`,`boardID`),
     FOREIGN KEY (`userID`) REFERENCES `Members`(`userID`),
@@ -66,3 +67,10 @@ INSERT INTO `Boards`(`userID`, `creationDate`, `changeDate`, `authority`) VALUES
 (1,NOW(),NOW(),0),
 (1,NOW(),NOW(),0),
 (1,NOW(),NOW(),0);
+
+INSERT INTO `Messages`(`boardID`, `userID`, `creationDate`, `changeDate`, `message`) VALUES
+(1,1,NOW(),NOW(),11111),
+(2,1,NOW(),NOW(),2222),
+(1,1,NOW(),NOW(),3333),
+(3,1,NOW(),NOW(),4444),
+(3,1,NOW(),NOW(),55555);

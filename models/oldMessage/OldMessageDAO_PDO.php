@@ -33,14 +33,13 @@ class OldMessageDAO_PDO implements OldMessageDAO
             $sth = null;
         } catch (PDOException $err) {
             $dbh->rollBack();
-            echo ($err->__toString());
             return false;
         }
         $dbh = null;
         return Message::dbDatasToModelsArray($request);
     }
 
-    //取得一個的留言
+    //刪除一個的留言
     public function deleteAllByMessageID($messageID)
     {
         try {
@@ -51,10 +50,30 @@ class OldMessageDAO_PDO implements OldMessageDAO
             $request = $sth->fetch(PDO::FETCH_NUM);
             $sth = null;
         } catch (PDOException $err) {
-            echo ($err->__toString());
             return false;
         }
         $dbh = null;
         return $request['0'];
+    }
+
+    //刪除留言板舊留言
+    public function deleteAllByBoard($boardMessages, $dbh)
+    {
+        //串接大量刪除項目
+        $sqlStr = "DELETE FROM `oldmessage` WHERE";
+        foreach ($boardMessages as $message) {
+            $sqlStr += "`messageID`={$message->getMessageID()} ||";
+        }
+        $sqlStr = substr($sqlStr, "", strlen($sqlStr) - 3);
+
+        try {
+            $sth = $dbh->prepare($sqlStr);
+            $sth->execute();
+            $sth = null;
+        } catch (PDOException $err) {
+            $dbh->rollBack();
+            return false;
+        }
+        return true;
     }
 }
