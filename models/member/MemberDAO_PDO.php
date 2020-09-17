@@ -83,36 +83,21 @@ class MemberDAO_PDO implements MemberDAO
         return true;
     }
 
-    public function getAllMember()
+    public function getOneMemberByID($userID)
     {
         try {
             $dbh = Config::getDBConnect();
-            $sth = $dbh->query("SELECT * FROM `Members`;");
-            $request = $sth->fetchAll(PDO::FETCH_ASSOC);
-            $sth = null;
-        } catch (PDOException $err) {
-            $dbh->rollBack();
-            echo ($err->__toString());
-            return false;
-        }
-        $dbh = null;
-        return Member::dbDatasToModelsArray($request);
-    }
-    public function getOneMemberByID($id)
-    {
-        try {
-            $dbh = Config::getDBConnect();
-            $sth = $dbh->prepare("SELECT * FROM `Members` WHERE `userID` = :userID;");
-            $sth->bindParam("userID", $id);
+            $sth = $dbh->prepare("SELECT * FROM `Members` WHERE `userID`=:userID;");
+            $sth->bindParam("userID", $userID);
             $sth->execute();
             $request = $sth->fetch(PDO::FETCH_ASSOC);
             $sth = null;
         } catch (PDOException $err) {
-            echo ($err->__toString());
+            $dbh->rollBack();
             return false;
         }
         $dbh = null;
-        return Member::dbDataToModel($request);
+        return $request;
     }
 
     public function doLogin($account, $password)
@@ -162,6 +147,21 @@ class MemberDAO_PDO implements MemberDAO
             $dbh->beginTransaction();
             $sth = $dbh->prepare("SELECT COUNT(*) FROM `Members` WHERE `userAccount` = :userAccount;");
             $sth->bindParam("userAccount", $id);
+            $sth->execute();
+            $request = $sth->fetch(PDO::FETCH_NUM);
+        } catch (Exception $err) {
+            return false;
+        }
+        return $request['0'];
+    }
+
+    public function checkEmailExist($email)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $dbh->beginTransaction();
+            $sth = $dbh->prepare("SELECT COUNT(*) FROM `Members` WHERE `userEmail`=:userEmail;");
+            $sth->bindParam("userEmail", $email);
             $sth->execute();
             $request = $sth->fetch(PDO::FETCH_NUM);
         } catch (Exception $err) {

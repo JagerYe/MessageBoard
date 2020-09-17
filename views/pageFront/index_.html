@@ -49,6 +49,7 @@
 
 	.mainMessage {
 		margin: 20px;
+		background-color: rgba(200, 200, 200, 0.4);
 	}
 
 	.mainMessage button {
@@ -64,8 +65,10 @@
 	}
 
 	/*文字自動換行*/
-	.AutoNewline {
-		word-break: break-all;
+	pre {
+		overflow-x: auto;
+		white-space: pre-wrap;
+		word-wrap: break-word;
 	}
 </style>
 
@@ -189,7 +192,7 @@
 								isMyself)
 						);
 					} else {
-						$("#massageShow").append(getMainMessageView(
+						$("#massageShow").append(getNewMainMessageView(
 							jsonMessageArr[key]._userID,
 							boardID,
 							jsonMessageArr[key]._userName,
@@ -248,7 +251,7 @@
 				let messageID = jsonArr.messageID;
 
 				if (boardID >= 1) {
-					$("#massageShow").prepend(getMainMessageView(
+					$("#massageShow").prepend(getNewMainMessageView(
 						userID,
 						boardID,
 						userName,

@@ -57,7 +57,6 @@ class MemberController extends Controller
         ) {
             return true;
         }
-        return false;
     }
 
     public function updateSelfPassword($str, $requestMethod)
@@ -78,39 +77,6 @@ class MemberController extends Controller
             $this->logout();
             return true;
         }
-        return false;
-    }
-
-    public function getAll()
-    {
-        if (!isset($_SESSION['empID'])) {
-            return false;
-        }
-
-        if ($members = MemberService::getDAO()->getAllMember()) {
-            return json_encode($members);
-        }
-        return false;
-    }
-
-    public function getOne($id)
-    {
-        if (!isset($_SESSION['empID'])) {
-            return false;
-        }
-
-        if ($member = MemberService::getDAO()->getOneMemberByID($id)) {
-            return json_encode($member);
-        }
-        return false;
-    }
-
-    public function getMemberSelfData()
-    {
-        if ($member = MemberService::getDAO()->getOneMemberByID($_SESSION['userID'])) {
-            return json_encode($member);
-        }
-        return false;
     }
 
     public function login($userAccount, $password)
@@ -118,9 +84,9 @@ class MemberController extends Controller
         if (($data = MemberService::getDAO()->doLogin($userAccount, $password))->check) {
             $member = MemberService::getDAO()->getOneMemberByID($data->userID);
 
-            $_SESSION["userAccount"] = $member->getUserAccount();
-            $_SESSION["userName"] = $member->getUserName();
-            $_SESSION["userID"] = $member->getUserID();
+            $_SESSION["userAccount"] = $member['userAccount'];
+            $_SESSION["userName"] = $member['userName'];
+            $_SESSION["userID"] = $member['userID'];
 
             return true;
         }
@@ -132,7 +98,6 @@ class MemberController extends Controller
         if (isset($_SESSION['userName'])) {
             return $_SESSION['userName'];
         }
-        return false;
     }
 
     public function getSessionUserID()
@@ -140,7 +105,6 @@ class MemberController extends Controller
         if (isset($_SESSION['userID'])) {
             return $_SESSION['userID'];
         }
-        return false;
     }
 
     public function logout()
@@ -153,5 +117,10 @@ class MemberController extends Controller
     public function checkMemberExist($id)
     {
         return (MemberService::getDAO()->checkMemberExist($id)) > 0;
+    }
+
+    public function checkEmailExist($email)
+    {
+        return (MemberService::getDAO()->checkEmailExist($email)) > 0;
     }
 }

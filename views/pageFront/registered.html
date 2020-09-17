@@ -49,6 +49,7 @@
 
 	$(window).ready(() => {
 
+		//確認密碼是否一致
 		$("#userPassword_").change(() => {
 			if ($("#userPassword").val() != $("#userPassword_").val()) {
 				$("#passwordCheckMessage").text("密碼不一致！");
@@ -57,6 +58,7 @@
 			}
 		});
 
+		//確認密碼格式
 		$("#userPassword").change(() => {
 			if (!($("#userPassword").val()).match(/\w{6,30}/)) {
 				$("#passwordCheckMessage").text("密碼格式錯誤！");
@@ -65,6 +67,7 @@
 			}
 		});
 
+		//檢驗帳號是否重複
 		$("#userAccount").change(() => {
 			$.ajax({
 				type: "GET",
@@ -79,6 +82,11 @@
 					$("#idCheckMessage").text("帳號格式錯誤");
 				}
 			});
+		});
+
+		//檢測信箱是否重複
+		$("#userEmail").change(()=> {
+			// alert($("#userEmail").val());
 		});
 
 		$("#btnSub").click(() => {
@@ -152,6 +160,7 @@
 						</div>
 						<input id="userEmail" class="form-control" placeholder="請輸入Email" type="email">
 					</div> <!-- form-group// -->
+					<p class="form-group" id="emailCheckMessage"></p>
 
 					<div class="form-group input-group">
 						<div class="input-group-prepend">
