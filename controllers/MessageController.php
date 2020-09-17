@@ -9,6 +9,11 @@ class MessageController extends Controller
 
     public function addMainMessage($str)
     {
+        //阻擋未登入者
+        if (!isset($_SESSION['userID'])) {
+            return false;
+        }
+
         $jsonArr = json_decode($str);
         // $board = $jsonArr['board'];
         $board = new Board();
@@ -24,6 +29,11 @@ class MessageController extends Controller
 
     public function addMessage($str)
     {
+        //阻擋未登入者
+        if (!isset($_SESSION['userID'])) {
+            return false;
+        }
+
         $jsonObj = json_decode($str);
         $message = new Message();
         $message->setBoardID($jsonObj->boardID);
@@ -36,19 +46,24 @@ class MessageController extends Controller
         );
     }
 
+    //取得所有公開版
     public function getPublicBoard()
     {
         return json_encode(BoardService::getDAO()->getAllPublic());
     }
 
-    public function getBoardMessages($id, $authority)
+    public function getBoardMessages($id)
     {
         return json_encode(MessageService::getDAO()->getAllMessageByBoardID($id));
     }
 
-    public function deleteMessage($id)
+    public function deleteMessage($id, $requestMethod)
     {
         $messageDAO = MessageService::getDAO();
+
+        if (!isset($_SESSION['empID']) && ($requestMethod != 'DELETE' || $messageDAO->getOneMessageByID($id)->getUserID() != $_SESSION['userID'])) {
+            return false;
+        }
 
         //判斷是否為第一個留言，如果是就直接刪除
         if (($boardID = $messageDAO->checkIsBoardByID($id)) == 0) {
@@ -56,18 +71,34 @@ class MessageController extends Controller
             return ($messageDAO->deleteMessageByID($id)) ? json_encode($data) : false;
         }
 
-        $data['board'] = $boardID;
+        $data['board'] = $id;
         //刪除留言板
         return (BoardService::getDAO()->deleteByID($boardID)) ? json_encode($data) : false;
     }
 
-    public function updateMessage($str)
+    public function updateMessage($str, $requestMethod)
     {
         $jsonObj = json_decode($str);
         $message = new Message();
         $message->setMessageID($jsonObj->messageID);
         $message->setMessage($jsonObj->message);
+        $messageDAO = MessageService::getDAO();
 
-        return MessageService::getDAO()->updateMessage($message);
+        if (!isset($_SESSION['empID']) && ($requestMethod != 'PUT' || $messageDAO->getOneMessageByID($message->getMessageID())->getUserID() != $_SESSION['userID'])) {
+            return false;
+        }
+
+        if (!$messageDAO->updateMessage($message)) {
+            return false;
+        }
+
+        $request = BoardService::getDAO()->getUpdateDateByMessageID($message->getMessageID());
+
+        // $data = array(
+        //     'boardID' => $request['boardID'],
+        //     'authority' => $request['authority'],
+        //     'messageID' => $request['messageID']
+        // );
+        return json_encode($request);
     }
 }

@@ -59,6 +59,10 @@
 		width: 100%;
 	}
 
+	.time {
+		font-size: 5px;
+	}
+
 	/*文字自動換行*/
 	.AutoNewline {
 		word-break: break-all;
@@ -86,46 +90,7 @@
 		});
 	}
 
-
-
-
-	$(window).ready(() => {
-		$("body").css("visibility", "hidden");
-		$.ajax({
-			type: "GET",
-			url: "/MessageBoard/member/getSessionUserID"
-		}).then(function (e) {
-			if (e >= 1) {
-				userID = e;
-				$("#showLogin").text("登出");
-				$("#showRegistered").empty();
-				$("#showUserName").text(name);
-			} else {
-				$(".addMainMassage").empty();
-			}
-
-			readySetListeners();
-
-			$("body").css("visibility", "visible");
-		});
-
-		updateMessageView();
-	});
-
-	function updateMessageView() {
-		$("#massageShow").empty();
-		$.ajax({
-			type: "GET",
-			url: "/MessageBoard/message/getPublicBoard"
-		}).then(function (e) {
-			let jsonArr = JSON.parse(e);
-			for (let jsonObj of jsonArr) {
-				getBoardMessages(jsonObj._boardID, jsonObj._authority);
-			}
-
-		});
-	}
-
+	//設定與現在的時間差
 	function getTiemDifference(date) {
 		let time = (new Date(new Date() - new Date(date))).getTime();
 		let count = 0;
@@ -165,48 +130,97 @@
 		}
 
 		time /= 12;//年
-		if (time < 4) {
-			return Math.floor(time) + "月前";
-		}
-
-
+		return Math.floor(time) + "月前";
 	}
 
-	function getBoardMessages(boardID, authority = 0) {
+
+	$(window).ready(() => {
+		$("body").css("visibility", "hidden");
+		$.ajax({
+			type: "GET",
+			url: "/MessageBoard/member/getSessionUserID"
+		}).then(function (e) {
+			if (e >= 1) {
+				userID = e;
+				$("#showLogin").text("登出");
+				$("#showRegistered").empty();
+				$("#showUserName").text(name);
+			} else {
+				$(".addMainMassage").empty();
+			}
+
+			readySetListeners();
+
+			$("body").css("visibility", "visible");
+		});
+
+		updateMessageView();
+	});
+
+	//更新所有主留言板
+	function updateMessageView() {
+		$("#massageShow").empty();
+		$.ajax({
+			type: "GET",
+			url: "/MessageBoard/message/getPublicBoard"
+		}).then(function (e) {
+			let jsonArr = JSON.parse(e);
+			for (let jsonObj of jsonArr) {
+				getBoardMessages(jsonObj._boardID);
+			}
+
+		});
+	}
+
+	//更新單一留言板
+	function getBoardMessages(boardID, isUpdate = false) {
 
 		$.ajax({
 			type: "GET",
-			url: `/MessageBoard/message/getBoardMessages?id=${boardID}&authority=?${authority}`
+			url: `/MessageBoard/message/getBoardMessages?id=${boardID}`
 		}).then(function (e) {
 			let jsonMessageArr = JSON.parse(e);
 			for (let key in jsonMessageArr) {
-				isMyself = (jsonMessageArr[key]._userID == userID);
-				// alert(jsonMessageArr[key]._changeDate);
-				let newTiem = new Date();
-				let oderTime = new Date(jsonMessageArr[key]._changeDate);
-				let Date_C = new Date(newTiem - oderTime);
-				alert("兩個時間差距為" + Math.floor(Date_C.getTime() / 3600000) + "小時 " + Date_C.getUTCMinutes() + "分 " + Date_C.getUTCSeconds() + "秒");
-				if (key == 0) {
-					$("#massageShow").append(getMainMessageView(
-						jsonMessageArr[key]._userID,
-						boardID,
-						jsonMessageArr[key]._userName,
-						jsonMessageArr[key]._message,
-						isMyself,
-						jsonMessageArr[key]._messageID));
+				let isMyself = (jsonMessageArr[key]._userID == userID);
+				let timeStr = getTiemDifference(jsonMessageArr[key]._changeDate);
+				let isBoard = (key == 0);
+				if (isBoard) {
+					if (isUpdate) {
+						$(`#mainMessageShow${jsonMessageArr[key]._messageID}`).empty().append(
+							getMainMessageView(
+								jsonMessageArr[key]._userID,
+								boardID,
+								jsonMessageArr[key]._userName,
+								jsonMessageArr[key]._message,
+								timeStr,
+								jsonMessageArr[key]._messageID,
+								isMyself)
+						);
+					} else {
+						$("#massageShow").append(getMainMessageView(
+							jsonMessageArr[key]._userID,
+							boardID,
+							jsonMessageArr[key]._userName,
+							jsonMessageArr[key]._message,
+							timeStr,
+							jsonMessageArr[key]._messageID,
+							isMyself));
+					}
+
 
 				} else {
 					$(`#boardMessage${boardID}`).append(getMessageView(
 						jsonMessageArr[key]._userID,
 						jsonMessageArr[key]._userName,
 						jsonMessageArr[key]._message,
-						isMyself,
-						jsonMessageArr[key]._messageID));
+						timeStr,
+						jsonMessageArr[key]._messageID,
+						isMyself));
 				}
 
 				//如果是自己的就可以修改及刪除
 				if (isMyself) {
-					addDeleteAndUpdateListener(jsonMessageArr[key]._messageID);
+					addDeleteAndUpdateListener(jsonMessageArr[key]._messageID, boardID, isBoard);
 				}
 
 			}
@@ -222,6 +236,8 @@
 	//初始化監聽器
 	function readySetListeners() {
 		setTextareaMode();
+
+		//新增主留言
 		$("#subMain").click(() => {
 
 			let board = { authority: 0 };
@@ -238,16 +254,21 @@
 				jsonArr = JSON.parse(e);
 				let boardID = jsonArr.boardID;
 				let messageID = jsonArr.messageID;
+
 				if (boardID >= 1) {
 					$("#massageShow").prepend(getMainMessageView(
 						userID,
 						boardID,
 						name,
 						message.message,
-						true,
-						messageID
+						getTiemDifference(new Date()),
+						messageID,
+						true
 					));
 					addMessageInputGrid(boardID);
+					addDeleteAndUpdateListener(messageID, boardID, true);
+					$("#mainMessage").val("").trigger('input');
+
 				}
 			});
 		});
@@ -272,10 +293,11 @@
 						userID,
 						name,
 						message,
-						true,
-						messageID));
-					addDeleteAndUpdateListener(messageID);
-					$(`#addMessage${boardID}`).val("");
+						getTiemDifference(new Date()),
+						messageID,
+						true));
+					addDeleteAndUpdateListener(messageID, boardID);
+					$(`#addMessage${boardID}`).val("").trigger('input');
 				}
 			});
 		});
@@ -283,7 +305,7 @@
 	}
 
 	//設定刪除及修改監聽器
-	function addDeleteAndUpdateListener(messageID) {
+	function addDeleteAndUpdateListener(messageID, boardID, isBoard = false) {
 
 		//刪除按鈕
 		$(`#deleteMessage${messageID}`).click(() => {
@@ -298,7 +320,7 @@
 						$(`#message${jsonArr[key]}`).remove();
 						break;
 					case "board":
-						$(`#mainMessage${jsonArr[key]}`).remove();
+						$(`#mainMessageShow${jsonArr[key]}`).remove();
 						break;
 				}
 			});
@@ -306,10 +328,9 @@
 
 		//修改按鈕
 		$(`#updateMessageBtn${messageID}`).click(function () {
+			let divIdStr = isBoard ? "mainMessageShow" : "message";
 
-			// let thisHtmlParent = $(this).parent().parent();
-			// let saveMessageStatus = thisHtmlParent.html();
-			// alert(saveMessageStatus);
+			// console.log($(`#${divIdStr+messageID}`).html());
 
 			$(`#text${messageID}`).html(getInputGridMessageView(messageID, $(`#text${messageID}`).children().last().text(), true));
 			$(this).parent().children("button").remove();
@@ -326,9 +347,10 @@
 					url: "/MessageBoard/message/updateMessage",
 					data: { 0: JSON.stringify(data) }
 				}).then(function (e) {
-					if (e == 1) {
-						updateMessageView();
-					} else {
+					try {
+						let jsonObj = JSON.parse(e);
+						getBoardMessages(boardID, true);
+					} catch (err) {
 						alert("更新失敗");
 					}
 				});
@@ -337,11 +359,12 @@
 			//取消按鈕
 			$(`#updateCancelBtn${messageID}`).click(() => {
 				// thisHtmlParent.html(saveMessageStatus);
-				updateMessageView();
+				getBoardMessages(boardID, true);
 			});
 
 			setTextareaMode();
 		});
+
 	}
 
 	//判斷是否登入

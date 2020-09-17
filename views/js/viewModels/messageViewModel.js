@@ -1,6 +1,6 @@
 //主留言
-function getMainMessageView(userID, boardID, name, message, isMyself = false, messageID = null) {
-    return `<div class="mainMessage" id="mainMessage${boardID}">
+function getMainMessageView(userID, boardID, name, message, time, messageID = null, isMyself = false) {
+    return `<div class="mainMessage" id="mainMessageShow${messageID}">
                 <div class="row">
                     <!-- <img class="col-1" src="" alt="" srcset=""> -->
                     <h4 class="col text-primary"><a href="?userID=${userID}">${name}</a></h4>
@@ -11,13 +11,14 @@ function getMainMessageView(userID, boardID, name, message, isMyself = false, me
                     <div class="col-1"></div>
                     <div class="col AutoNewline">${message}</div>
                 </div>
+                <div class="time">${time}</div>
                 <div id="boardMessage${boardID}"></div>
                 <dib id="messageInputGrid${boardID}"></div>
             </div>`;
 }
 
 //主留言下的副留言
-function getMessageView(userID, name, message, isMyself = false, messageID = null) {
+function getMessageView(userID, name, message, time, messageID = null, isMyself = false) {
     return `<div class="row oneMessage" id="message${messageID}">
                 <!-- <img class="col-1" src="" alt="" srcset=""> -->
                 <div class="col">
@@ -29,6 +30,7 @@ function getMessageView(userID, name, message, isMyself = false, messageID = nul
                         <div class="col-1"></div>
                         <div class="col AutoNewline">${message}</div>
                     </div>
+                    <div class="time">${time}</div>
                 </div>
             </div>`;
 }

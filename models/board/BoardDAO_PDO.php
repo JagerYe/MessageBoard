@@ -136,4 +136,25 @@ class BoardDAO_PDO implements BoardDAO
         $dbh = null;
         return $request > 0;
     }
+
+    //取得更新畫面所需資料
+    public function getUpdateDateByMessageID($messageID)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $sth = $dbh->prepare("SELECT b.`boardID`, `authority`, `messageID` FROM `Boards` AS b
+                                    INNER JOIN `Messages` AS m ON m.`boardID`=b.`boardID`
+                                    WHERE b.`boardID`=(SELECT `boardID` FROM `Messages` WHERE `messageID`=:messageID)
+                                    ORDER BY `messageID` LIMIT 1;");
+            $sth->bindParam("messageID", $messageID);
+            $sth->execute();
+            $request = $sth->fetch(PDO::FETCH_ASSOC);
+            $sth = null;
+        } catch (PDOException $err) {
+            $dbh = null;
+            return false;
+        }
+        $dbh = null;
+        return $request;
+    }
 }

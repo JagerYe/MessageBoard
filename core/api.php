@@ -30,7 +30,7 @@ class Api
                 parse_str(file_get_contents('php://input'), $values);
                 break;
         }
-
+        $values[] = $requestMethod;
 
         echo call_user_func_array(array($controller, $methodName), $values);
     }
