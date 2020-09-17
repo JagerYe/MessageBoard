@@ -7,10 +7,10 @@ class MessageController extends Controller
         $this->requireDAO("Message");
     }
 
-    public function addMainMessage($str)
+    public function addMainMessage($str, $requestMethod)
     {
         //阻擋未登入者
-        if (!isset($_SESSION['userID'])) {
+        if (!isset($_SESSION['userID']) || $requestMethod != 'POST') {
             return false;
         }
 
@@ -27,10 +27,10 @@ class MessageController extends Controller
         return json_encode($data);
     }
 
-    public function addMessage($str)
+    public function addMessage($str, $requestMethod)
     {
         //阻擋未登入者
-        if (!isset($_SESSION['userID'])) {
+        if (!isset($_SESSION['userID']) || $requestMethod != 'POST') {
             return false;
         }
 

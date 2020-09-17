@@ -6,8 +6,12 @@ class MemberController extends Controller
         $this->requireDAO("member");
     }
 
-    public function insertByObj($str)
+    public function insertByObj($str, $requestMethod)
     {
+        if ($requestMethod != 'POST') {
+            return false;
+        }
+
         $jsonObj = json_decode($str);
         $member = new Member();
         $member->setUserAccount($jsonObj->userAccount);
@@ -29,16 +33,49 @@ class MemberController extends Controller
         return false;
     }
 
-    public function update($str)
+    public function update($str, $requestMethod)
+    {
+        if (!isset($_SESSION['userID']) || $requestMethod != 'PUT') {
+            return false;
+        }
+
+        $jsonObj = json_decode($str);
+        $member = new Member();
+        $member->setUserID($_SESSION['userID']);
+        $member->setUserName($jsonObj->userName);
+        $member->setUserEmail($jsonObj->userEmail);
+        $member->setUserPhone($jsonObj->userPhone);
+        $member->setUserPassword($jsonObj->userPassword);
+
+        $memberDAO = MemberService::getDAO();
+
+        if (
+            $memberDAO->checkPassword(
+                $member->getUserID(),
+                $member->getUserPassword()
+            ) && $memberDAO->updateMember($member)
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    public function updateSelfPassword($str, $requestMethod)
     {
         $jsonObj = json_decode($str);
         $member = new Member();
-        $member->setUserAccount($_SESSION['userAccount']);
-        $member->setUserName($jsonObj['name']);
-        $member->setUserEmail($jsonObj['email']);
-        $member->setUserPhone($jsonObj['phone']);
+        $member->setUserPassword($jsonObj->userPassword);
+        if ((!isset($_SESSION['userID'])) || ($requestMethod != 'PUT') || ($member->getUserPassword() != $jsonObj->userPasswordAgain)) {
+            return false;
+        }
 
-        if (MemberService::getDAO()->updateMember($member)) {
+        $memberDAO = MemberService::getDAO();
+        if (
+            $memberDAO->checkPassword($_SESSION['userID'], $jsonObj->userOldPassword)
+            &&
+            $memberDAO->updatePassword($_SESSION['userID'], $member->getUserPassword())
+        ) {
+            $this->logout();
             return true;
         }
         return false;
@@ -46,6 +83,10 @@ class MemberController extends Controller
 
     public function getAll()
     {
+        if (!isset($_SESSION['empID'])) {
+            return false;
+        }
+
         if ($members = MemberService::getDAO()->getAllMember()) {
             return json_encode($members);
         }
@@ -54,7 +95,19 @@ class MemberController extends Controller
 
     public function getOne($id)
     {
+        if (!isset($_SESSION['empID'])) {
+            return false;
+        }
+
         if ($member = MemberService::getDAO()->getOneMemberByID($id)) {
+            return json_encode($member);
+        }
+        return false;
+    }
+
+    public function getMemberSelfData()
+    {
+        if ($member = MemberService::getDAO()->getOneMemberByID($_SESSION['userID'])) {
             return json_encode($member);
         }
         return false;

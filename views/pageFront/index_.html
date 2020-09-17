@@ -71,14 +71,9 @@
 
 <script src="../js/viewModels/showViewModel.js"></script>
 <script src="../js/viewModels/messageViewModel.js"></script>
+<script src="../js/viewModels/memberViewModel.js"></script>
+<script src="../js/title.js"></script>
 <script>
-	let name;
-	$.ajax({
-		type: "GET",
-		url: "/MessageBoard/member/getSessionUserName"
-	}).then(function (e) {
-		name = e;
-	});
 
 	let userID = -1;
 
@@ -142,11 +137,8 @@
 		}).then(function (e) {
 			if (e >= 1) {
 				userID = e;
-				$("#showLogin").text("登出");
-				$("#showRegistered").empty();
-				$("#showUserName").text(name);
 			} else {
-				$(".addMainMassage").empty();
+				$(".addMainMassage").remove();
 			}
 
 			readySetListeners();
@@ -259,7 +251,7 @@
 					$("#massageShow").prepend(getMainMessageView(
 						userID,
 						boardID,
-						name,
+						userName,
 						message.message,
 						getTiemDifference(new Date()),
 						messageID,
@@ -291,7 +283,7 @@
 				if (messageID >= 1) {
 					$(`#boardMessage${boardID}`).append(getMessageView(
 						userID,
-						name,
+						userName,
 						message,
 						getTiemDifference(new Date()),
 						messageID,

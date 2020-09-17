@@ -1,13 +1,18 @@
-import { Member } from "../js/models/member.js";
+var userName;
+
 $(window).ready(() => {
     $.ajax({
         type: "GET",
-        url: "/PID_Assignment/member/getSessionUserName"
+        url: "/MessageBoard/member/getSessionUserName"
     }).then(function (e) {
-        $("#userName").text(e);
+
+        userName = e;
         if (e) {
-            $("#textLogin").text("登出");
-            $("#textregistered").html("");
+            $("#showUserName").html(getTitleUserNameView(e));
+            $("#showLogin").text("登出");
+            $("#showRegistered").html("");
+        } else {
+            $("#showUserName").remove();
         }
 
     });
