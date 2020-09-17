@@ -86,6 +86,7 @@
 			$(this).height("");
 			$(this).height(this.scrollHeight);
 		});
+		
 	}
 
 	//設定與現在的時間差
@@ -325,11 +326,9 @@
 		$(`#updateMessageBtn${messageID}`).click(function () {
 			let divIdStr = isBoard ? "mainMessageShow" : "message";
 
-			// console.log($(`#${divIdStr+messageID}`).html());
-
 			$(`#text${messageID}`).html(getInputGridMessageView(messageID, $(`#text${messageID}`).children().last().text(), true));
 			$(this).parent().children("button").remove();
-
+			
 			//上傳更新按鈕
 			$(`#updateMessageSub${messageID}`).click(() => {
 				let data = {
@@ -358,17 +357,11 @@
 			});
 
 			setTextareaMode();
+			$(`#updateMessage${messageID}`).trigger('input');
 		});
 
 	}
 
-	//判斷是否登入
-	// function checkLogin() {
-	// 	if (!name) {
-	// 		alert("您尚未登入，請先登入");
-	// 		window.location.href = "login.html";
-	// 	}
-	// }
 </script>
 
 <body>
