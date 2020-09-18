@@ -155,18 +155,18 @@ class MemberDAO_PDO implements MemberDAO
         return $request['0'];
     }
 
-    public function checkEmailExist($email)
-    {
-        try {
-            $dbh = Config::getDBConnect();
-            $dbh->beginTransaction();
-            $sth = $dbh->prepare("SELECT COUNT(*) FROM `Members` WHERE `userEmail`=:userEmail;");
-            $sth->bindParam("userEmail", $email);
-            $sth->execute();
-            $request = $sth->fetch(PDO::FETCH_NUM);
-        } catch (Exception $err) {
-            return false;
-        }
-        return $request['0'];
-    }
+    // public function checkEmailExist($email)
+    // {
+    //     try {
+    //         $dbh = Config::getDBConnect();
+    //         $dbh->beginTransaction();
+    //         $sth = $dbh->prepare("SELECT COUNT(*) FROM `Members` WHERE `userEmail`=:userEmail;");
+    //         $sth->bindParam("userEmail", $email);
+    //         $sth->execute();
+    //         $request = $sth->fetch(PDO::FETCH_NUM);
+    //     } catch (Exception $err) {
+    //         return false;
+    //     }
+    //     return $request['0'];
+    // }
 }

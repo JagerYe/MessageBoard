@@ -119,8 +119,13 @@ class MemberController extends Controller
         return (MemberService::getDAO()->checkMemberExist($id)) > 0;
     }
 
-    public function checkEmailExist($email)
+    // public function checkEmailExist($email)
+    // {
+    //     return (MemberService::getDAO()->checkEmailExist($email)) > 0;
+    // }
+
+    public function getMemberSelfData()
     {
-        return (MemberService::getDAO()->checkEmailExist($email)) > 0;
+        return json_encode(MemberService::getDAO()->getOneMemberByID($_SESSION['userID']));
     }
 }

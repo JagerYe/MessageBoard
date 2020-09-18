@@ -12,7 +12,11 @@ function getNewMainMessageView(userID, boardID, name, message, time, messageID =
                     <div class="col"><pre>${message}</pre></div>
                 </div>
                 <div class="time">${time}</div>
-                <div id="boardMessage${boardID}"></div>
+                <div class="row">
+                    <div class="col-1"></div>
+                    <div id="boardMessage${boardID}"></div>
+                    <div class="col-1"></div>
+                </div>
                 <dib id="messageInputGrid${boardID}"></div>
             </div>`;
 }
@@ -29,13 +33,17 @@ function getMainMessageView(userID, boardID, name, message, time, messageID = nu
                 <div class="col"><pre>${message}</pre></div>
             </div>
             <div class="time">${time}</div>
-            <div id="boardMessage${boardID}"></div>
+            <div class="row">
+                <div class="col-1"></div>
+                <div id="boardMessage${boardID}"></div>
+                <div class="col-1"></div>
+            </div>
             <dib id="messageInputGrid${boardID}"></div>`;
 }
 
 //主留言下的副留言
 function getMessageView(userID, name, message, time, messageID = null, isMyself = false) {
-    return `<div class="row oneMessage" id="message${messageID}">
+    return `<div class="row oneMessage btn-light" id="message${messageID}">
                 <!-- <img class="col-1" src="" alt="" srcset=""> -->
                 <div class="col">
                     <div class="row">

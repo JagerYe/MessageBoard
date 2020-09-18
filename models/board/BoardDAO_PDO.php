@@ -36,26 +36,25 @@ class BoardDAO_PDO implements BoardDAO
         return $data;
     }
 
-    //更新
-    public function updateBoard($Board)
+    //取得更新畫面所需資料
+    public function getUpdateDateByMessageID($messageID)
     {
         try {
             $dbh = Config::getDBConnect();
-            $dbh->beginTransaction();
-            $sth = $dbh->prepare("UPDATE `Boards` SET `changeDate`=NOW(),`authority`=:authority
-                                    WHERE `boardID`=:boardID && `userID`=:userID;");
-            $sth->bindParam("userID", $Board->getUserID());
-            $sth->bindParam("userName", $Board->getUserName());
-            $sth->bindParam("authority", $Board->getAuthority());
+            $sth = $dbh->prepare("SELECT b.`boardID`, `authority`, `messageID` FROM `Boards` AS b
+                                    INNER JOIN `Messages` AS m ON m.`boardID`=b.`boardID`
+                                    WHERE b.`boardID`=(SELECT `boardID` FROM `Messages` WHERE `messageID`=:messageID)
+                                    ORDER BY `messageID` LIMIT 1;");
+            $sth->bindParam("messageID", $messageID);
             $sth->execute();
-            $dbh->commit();
+            $request = $sth->fetch(PDO::FETCH_ASSOC);
             $sth = null;
         } catch (PDOException $err) {
-            $dbh->rollBack();
+            $dbh = null;
             return false;
         }
         $dbh = null;
-        return true;
+        return $request;
     }
 
     public function getAllPublic()
@@ -74,7 +73,7 @@ class BoardDAO_PDO implements BoardDAO
         return Board::dbDatasToModelsArray($request);
     }
 
-    //取得單會員所有留言板
+    //取得單會員所有留言板，View未完成
     public function getAllUserBoardByUserID($id)
     {
         try {
@@ -92,7 +91,7 @@ class BoardDAO_PDO implements BoardDAO
         return Board::dbDatasToModelsArray($request);
     }
 
-    //取得一個的留言板
+    //取得一個的留言板，View未完成
     public function getOneBoardByID($id)
     {
         try {
@@ -135,26 +134,5 @@ class BoardDAO_PDO implements BoardDAO
         }
         $dbh = null;
         return $request > 0;
-    }
-
-    //取得更新畫面所需資料
-    public function getUpdateDateByMessageID($messageID)
-    {
-        try {
-            $dbh = Config::getDBConnect();
-            $sth = $dbh->prepare("SELECT b.`boardID`, `authority`, `messageID` FROM `Boards` AS b
-                                    INNER JOIN `Messages` AS m ON m.`boardID`=b.`boardID`
-                                    WHERE b.`boardID`=(SELECT `boardID` FROM `Messages` WHERE `messageID`=:messageID)
-                                    ORDER BY `messageID` LIMIT 1;");
-            $sth->bindParam("messageID", $messageID);
-            $sth->execute();
-            $request = $sth->fetch(PDO::FETCH_ASSOC);
-            $sth = null;
-        } catch (PDOException $err) {
-            $dbh = null;
-            return false;
-        }
-        $dbh = null;
-        return $request;
     }
 }

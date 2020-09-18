@@ -92,13 +92,6 @@ class MessageController extends Controller
             return false;
         }
 
-        $request = BoardService::getDAO()->getUpdateDateByMessageID($message->getMessageID());
-
-        // $data = array(
-        //     'boardID' => $request['boardID'],
-        //     'authority' => $request['authority'],
-        //     'messageID' => $request['messageID']
-        // );
-        return json_encode($request);
+        return json_encode(BoardService::getDAO()->getUpdateDateByMessageID($message->getMessageID()));
     }
 }
