@@ -11,8 +11,12 @@
 	<title>留言板</title>
 
 	<!-- Bootstrap core CSS -->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-		integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+		integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css"
+		integrity="sha384-6pzBo3FDv/PJ8r2KRkGHifhEocL+1X2rVCTTkUfGk7/0pbek5mMa1upzvWbrUbOZ" crossorigin="anonymous">
 
 	<!-- Custom styles for this template -->
 	<link href="/MessageBoard/views/css/starter-template.css" rel="stylesheet">
@@ -24,22 +28,22 @@
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
 		integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
 		crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-		integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
-		crossorigin="anonymous"></script>
+
 
 	<!-- ajax -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+		integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+		crossorigin="anonymous"></script>
 </head>
 <style>
 	.oneMessage {
-		/* margin: 10px; */
-		margin-bottom: 10px;
-		margin-left: 15px;
+		margin: 5px;
 	}
 
-	.row{
-		padding:10px;
+	.row {
+		padding: 10px;
 	}
 
 	.newMessage {
@@ -54,16 +58,14 @@
 	}
 
 	.mainMessage {
-		margin: 20px;
-		background-color: rgba(200, 200, 200, 0.4);
+		margin-bottom: 20px;
+		padding: 10px;
+		background-color: rgba(66, 124, 231, 0.1);
+		width: 100%;
 	}
 
 	.mainMessage button {
 		margin: 3px;
-	}
-
-	div {
-		width: 100%;
 	}
 
 	.time {
@@ -75,6 +77,18 @@
 		overflow-x: auto;
 		white-space: pre-wrap;
 		word-wrap: break-word;
+
+		/* 去除 bootstrap 3 預設樣式 */
+		border: 0;
+		background-color: transparent;
+	}
+
+	body {
+		padding: 0;
+	}
+
+	button {
+		padding: 0;
 	}
 </style>
 
@@ -88,11 +102,11 @@
 
 	//設定textarea模式
 	function setTextareaMode() {
-		$("textarea").on('input', function (e) {
+		$("textarea").on('input', function () {
 			$(this).height("");
 			$(this).height(this.scrollHeight);
 		});
-		
+
 	}
 
 	//設定與現在的時間差
@@ -157,6 +171,8 @@
 		});
 
 		updateMessageView();
+
+
 	});
 
 	//更新所有主留言板
@@ -220,6 +236,8 @@
 						isMyself));
 				}
 
+				$(`#messageText${jsonMessageArr[key]._messageID}`).text(jsonMessageArr[key]._message);
+
 				//如果是自己的就可以修改及刪除
 				if (isMyself) {
 					addDeleteAndUpdateListener(jsonMessageArr[key]._messageID, boardID, isBoard);
@@ -267,6 +285,7 @@
 						messageID,
 						true
 					));
+					$(`#messageText${messageID}`).text(message.message);
 					addMessageInputGrid(boardID);
 					addDeleteAndUpdateListener(messageID, boardID, true);
 					$("#mainMessage").val("").trigger('input');
@@ -299,6 +318,7 @@
 						messageID,
 						true));
 					addDeleteAndUpdateListener(messageID, boardID);
+					$(`#messageText${messageID}`).text(message);
 					$(`#addMessage${boardID}`).val("").trigger('input');
 				}
 			});
@@ -330,17 +350,28 @@
 
 		//修改按鈕
 		$(`#updateMessageBtn${messageID}`).click(function () {
-			let divIdStr = isBoard ? "mainMessageShow" : "message";
+			$('#myModal').modal('show');
 
-			$(`#text${messageID}`).html(getInputGridMessageView(messageID, $(`#text${messageID}`).children().last().text(), true));
-			$(this).parent().children("button").remove();
-			
-			//上傳更新按鈕
-			$(`#updateMessageSub${messageID}`).click(() => {
+			$("#updateMessageText").val($(`#text${messageID}`).children().last().text());
+			$("#updateMessageText").trigger('input');
+
+			$("#updateMessageModal").ready(function () {
+				$("#updateMessageText").height(function (e) {
+					let a = (this);
+				});
+			});
+
+			//修改送出
+			$("#updateSubBtn").click(() => {
+
 				let data = {
 					"messageID": messageID,
-					"message": $(`#updateMessage${messageID}`).val()
+					"message": $("#updateMessageText").val()
 				};
+
+				$("#updateMessageText").height(function (e) {
+					let a = (this);
+				});
 
 				$.ajax({
 					type: "PUT",
@@ -350,20 +381,55 @@
 					try {
 						let jsonObj = JSON.parse(e);
 						getBoardMessages(boardID, true);
+						$("#updateCloseBtn").trigger("click");
 					} catch (err) {
 						alert("更新失敗");
 					}
 				});
 			});
 
-			//取消按鈕
-			$(`#updateCancelBtn${messageID}`).click(() => {
-				// thisHtmlParent.html(saveMessageStatus);
-				getBoardMessages(boardID, true);
+			//修改取消
+			$("#updateCloseBtn").click(() => {
+				$("#updateSubBtn").off('click');
+				$("#updateCloseBtn").off('click');
+				$("#updateMessageText").empty();
 			});
 
-			setTextareaMode();
-			$(`#updateMessage${messageID}`).trigger('input');
+
+			// let divIdStr = isBoard ? "mainMessageShow" : "message";
+
+			// $(`#text${messageID}`).html(getInputGridMessageView(messageID, $(`#text${messageID}`).children().last().text(), true));
+			// $(this).parent().children("button").remove();
+
+			// //上傳更新按鈕
+			// $(`#updateMessageSub${messageID}`).click(() => {
+			// 	let data = {
+			// 		"messageID": messageID,
+			// 		"message": $(`#updateMessage${messageID}`).val()
+			// 	};
+
+			// 	$.ajax({
+			// 		type: "PUT",
+			// 		url: "/MessageBoard/message/updateMessage",
+			// 		data: { 0: JSON.stringify(data) }
+			// 	}).then(function (e) {
+			// 		try {
+			// 			let jsonObj = JSON.parse(e);
+			// 			getBoardMessages(boardID, true);
+			// 		} catch (err) {
+			// 			alert("更新失敗");
+			// 		}
+			// 	});
+			// });
+
+			// //取消按鈕
+			// $(`#updateCancelBtn${messageID}`).click(() => {
+			// 	// thisHtmlParent.html(saveMessageStatus);
+			// 	getBoardMessages(boardID, true);
+			// });
+
+			// setTextareaMode();
+			// $(`#updateMessage${messageID}`).trigger('input');
 		});
 
 	}
@@ -371,61 +437,80 @@
 </script>
 
 <body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+					data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/MessageBoard/views/pageFront/index_.html">留言板</a>
+			</div>
 
-	<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-		<a class="navbar-brand" href="/MessageBoard/views/pageFront/index_.html">留言板</a>
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
-			aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-
-		<div class="collapse navbar-collapse" id="navbarsExampleDefault">
-			<ul class="navbar-nav mr-auto">
-				<!-- <li class="nav-item active">
-					<div class="btn nav-link">存款</div>
-				</li>
-				<li class="nav-item active">
-					<div class="btn nav-link">提款</div>
-				</li>
-				<li class="nav-item active">
-					<div class="btn nav-link">查詢明細</div>
-				</li> -->
-
-			</ul>
-			<ul class="navbar-nav my-2 my-lg-0">
-				<li class="nav-item active">
-					<div class="nav-link showUserName" id="showUserName"></div>
-				</li>
-				<li class="nav-item active">
-					<a class="nav-link" href="login.html" id="showLogin">登入</a>
-				</li>
-				<li class="nav-item active" id="showRegistered">
-					<a class="nav-link" href="registered.html">註冊</a>
-				</li>
-			</ul>
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav navbar-right">
+					<li id="showUserName"></li>
+					<li><a href="login.html" id="showLogin">登入</a></li>
+					<li id="showRegistered"><a href="registered.html">註冊</a></li>
+				</ul>
+			</div>
 		</div>
+
 	</nav>
 
-	<main role="main" class="container">
+	<main class="container">
 
 		<div class="row">
-			<div class="col-2"></div>
-			<div class="col-8">
+			<div class="col-xs-2"></div>
+			<div class="col-xs-8">
 				<div class="addMainMassage">
 					<h2>來說點什麼吧</h2>
 					<textarea id="mainMessage"></textarea>
-					<div>
-						<button class="btn btn-outline-success" style="visibility:hidden">送出</button>
-						<button class="float-right btn btn-outline-success" type="button" id="subMain">送出</button>
+					<div class="row">
+						<button class="pull-right btn btn-success" type="button" id="subMain">送出</button>
 					</div>
 					<br>
 				</div>
 
 				<div id="massageShow"></div>
 			</div>
-			<div class="col-2"></div>
+			<div class="col-xs-2"></div>
 		</div>
 
+		<!-- Modal，用於修改訊息用-->
+		<div class="modal fade" id="updateMessageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<!--背景-->
+			<div class="modal-dialog" role="document">
+				<!--內距-->
+				<div class="modal-content">
+					<!--主體-->
+					<div class="modal-header">
+						<!--頭-->
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+								aria-hidden="true">&times;</span></button>
+						<!--按鈕要先，才能保持在上方-->
+						<h4 class="modal-title">修改留言</h4>
+						<!--開頭-->
+					</div>
+					<div class="modal-body">
+						<!--身-->
+						<textarea id="updateMessageText" cols="30" rows="1"></textarea>
+					</div>
+					<div class="modal-footer">
+						<!--底-->
+						<button type="button" class="btn btn-default" data-dismiss="modal"
+							id="updateCloseBtn">取消</button>
+						<!--取消按鈕-->
+						<button type="button" class="btn btn-primary" id="updateSubBtn">更新</button>
+						<!--送出-->
+					</div>
+				</div>
+			</div>
+		</div>
 
 	</main><!-- /.container -->
 

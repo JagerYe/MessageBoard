@@ -11,8 +11,8 @@
 	<title>留言板</title>
 
 	<!-- Bootstrap core CSS -->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-		integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+		integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 	<!-- Custom styles for this template -->
 	<link href="/MessageBoard/views/css/starter-template.css" rel="stylesheet">
@@ -24,13 +24,22 @@
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
 		integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
 		crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-		integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+		integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
 		crossorigin="anonymous"></script>
 
 	<!-- ajax -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
+<style>
+	article {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		height: 50%;
+	}
+</style>
 <script>
 	//防止重新導入這，倒入這就直接回首頁
 	$("body").css("display", "none");
@@ -85,7 +94,7 @@
 		});
 
 		//檢測信箱是否重複
-		$("#userEmail").change(()=> {
+		$("#userEmail").change(() => {
 			// alert($("#userEmail").val());
 		});
 
@@ -142,9 +151,10 @@
 <body>
 
 	<main role="main" class="container">
-		<div class="card bg-light">
-			<article class="card-body mx-auto" style="max-width: 400px;">
-				<h4 class="card-title mt-3 text-center">註冊</h4>
+		<div class="panel panel-default">
+			<article class="panel-body mx-auto pagination-centered">
+
+				<h4 class="panel-title mt-3 text-center">註冊</h4>
 
 				<form>
 					<div class="form-group input-group">
@@ -200,8 +210,9 @@
 					<p class="text-center">Have an account? <a href="/MessageBoard/views/pageFront/login.html">Log
 							In</a> </p>
 				</form>
+
 			</article>
-		</div> <!-- card.// -->
+		</div> <!-- panel.// -->
 
 	</main><!-- /.container -->
 

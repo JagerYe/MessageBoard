@@ -10,7 +10,7 @@ $(window).ready(() => {
         if (e) {
             $("#showUserName").html(getTitleUserNameView(e));
             $("#showLogin").text("登出");
-            $("#showRegistered").html("");
+            $("#showRegistered").remove();
         } else {
             $("#showUserName").remove();
         }
