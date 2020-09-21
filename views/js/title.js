@@ -7,12 +7,12 @@ $(window).ready(() => {
     }).then(function (e) {
 
         userName = e;
-        if (e) {
+        if (e === 'false') {
+            $("#showUserName").remove();
+        } else {
             $("#showUserName").html(getTitleUserNameView(e));
             $("#showLogin").text("登出");
             $("#showRegistered").remove();
-        } else {
-            $("#showUserName").remove();
         }
 
     });

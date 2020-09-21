@@ -9,11 +9,12 @@ class Api
         $url = explode("/", $url);
         $controllerName = "{$url[0]}Controller";
         if (!file_exists("{$_SERVER['DOCUMENT_ROOT']}/MessageBoard/controllers/$controllerName.php")) {
-            return;
+            $controllerName = 'IndexController';
+            $url[1] = 'getIndexView';
         }
         require_once "{$_SERVER['DOCUMENT_ROOT']}/MessageBoard/controllers/$controllerName.php";
         $controller = new $controllerName;
-        $methodName = isset($url[1]) ? $url[1] : "";
+        $methodName = isset($url[1]) ? $url[1] : "getIndexView";
         if (!method_exists($controller, $methodName)) {
             return;
         }

@@ -39,6 +39,9 @@
 		transform: translate(-50%, -50%);
 		height: 50%;
 	}
+	body{
+		padding: 0;
+	}
 </style>
 <script>
 	//防止重新導入這，倒入這就直接回首頁
@@ -47,55 +50,78 @@
 		type: "GET",
 		url: "/MessageBoard/member/getSessionUserName"
 	}).then(function (e) {
-		if (e) {
-			window.location.href = "/MessageBoard/views/pageFront/index_.html";
-		} else {
+		if (e === 'false') {
 			$("body").css("display", "inline");
+		} else {
+			window.location.href = "/MessageBoard/index";
 		}
 	});
 </script>
+<script src="/MessageBoard/views/js/rule.js"></script>
 <script>
-
 	$(window).ready(() => {
 
 		//確認密碼是否一致
-		$("#userPassword_").change(() => {
-			if ($("#userPassword").val() != $("#userPassword_").val()) {
+		$("#userPassword_").change(function () {
+			$("#passwordCheckMessage").empty();
+			if ($("#userPassword").val() != this.value) {
 				$("#passwordCheckMessage").text("密碼不一致！");
-			} else {
-				$("#passwordCheckMessage").empty();
 			}
 		});
 
 		//確認密碼格式
-		$("#userPassword").change(() => {
-			if (!($("#userPassword").val()).match(/\w{6,30}/)) {
+		$("#userPassword").change(function () {
+			$("#passwordCheckMessage").empty();
+			if (!this.value.match(passwordRule)) {
 				$("#passwordCheckMessage").text("密碼格式錯誤！");
-			} else {
-				$("#passwordCheckMessage").empty();
 			}
 		});
 
-		//檢驗帳號是否重複
-		$("#userAccount").change(() => {
+		//檢驗帳號
+		$("#userAccount").change(function () {
+			$("#idCheckMessage").empty();
+
+			//確認是否重複
 			$.ajax({
 				type: "GET",
-				url: `/MessageBoard/member/checkMemberExist?id=${$("#userAccount").val()}`
+				url: `/MessageBoard/member/checkMemberExist?id=${this.value}`
 			}).then(function (e) {
-				if (e) {
-					$("#idCheckMessage").text("此帳號有人使用");
-				} else {
-					$("#idCheckMessage").empty();
-				}
-				if (!($("#userAccount").val()).match(/\w{6,30}/)) {
-					$("#idCheckMessage").text("帳號格式錯誤");
+				if (e === '1') {
+					$("#idCheckMessage").append("此帳號有人使用<br>");
 				}
 			});
+
+			//格式
+			if (!this.value.match(accountRule)) {
+				$("#idCheckMessage").append("帳號格式錯誤<br>");
+			}
 		});
 
-		//檢測信箱是否重複
-		$("#userEmail").change(() => {
-			// alert($("#userEmail").val());
+		//檢測信箱
+		$("#userEmail").change(function () {
+			$("#emailCheckMessage").empty();
+			//格式
+			if (!this.value.match(emailRule)) {
+				$("#emailCheckMessage").text("Email格式錯誤");
+			}
+		});
+
+		//檢查名字
+		$("#userName").change(function () {
+			$("#nameCheckMessage").empty();
+			//格式
+			if (!this.value.match(nameRule)) {
+				$("#nameCheckMessage").text("姓名格式錯誤");
+			}
+		});
+
+		//檢查電話
+		$("#userPhone").change(function () {
+			$("#phoneCheckMessage").empty();
+			//格式
+			if (!this.value.match(phoneRule)) {
+				$("#phoneCheckMessage").text("電話格式錯誤");
+			}
 		});
 
 		$("#btnSub").click(() => {
@@ -111,20 +137,19 @@
 				alert("密碼格式錯誤！");
 				return;
 			}
-			if (member.userName.length <= 0) {
+			if (!member.userName.match(nameRule)) {
 				alert("名字空白！");
 				return;
 			}
-			let emailRule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
 			if (!member.userEmail.match(emailRule)) {
 				alert("Email格式錯誤");
 				return;
 			}
-			if (!member.userPhone.match(/\d{10}/)) {
+			if (!member.userPhone.match(phoneRule)) {
 				alert("電話格式錯誤");
 				return;
 			}
-			if (!member.userAccount.match(/\w{6,30}/)) {
+			if (!member.userAccount.match(accountRule)) {
 				alert("帳號格式錯誤");
 				return;
 			}
@@ -136,9 +161,9 @@
 				url: "/MessageBoard/member/insertByObj",
 				data: subData
 			}).then(function (e) {
-				if (e) {
+				if (e === '1') {
 					alert("註冊成功，請登入");
-					window.location.href = "/MessageBoard/views/pageFront/login.html";
+					window.location.href = "/MessageBoard/member/getLoginView";
 				} else {
 					alert("註冊失敗");
 				}
@@ -146,6 +171,7 @@
 
 		});
 	});
+
 </script>
 
 <body>
@@ -163,6 +189,7 @@
 						</div>
 						<input id="userName" class="form-control" placeholder="請輸入姓名" type="text">
 					</div> <!-- form-group// -->
+					<p class="form-group" id="nameCheckMessage"></p>
 
 					<div class="form-group input-group">
 						<div class="input-group-prepend">
@@ -178,6 +205,7 @@
 						</div>
 						<input id="userPhone" class="form-control" placeholder="請輸入手機號碼" type="text">
 					</div> <!-- form-group// -->
+					<p class="form-group" id="phoneCheckMessage"></p>
 
 					<div class="form-group input-group">
 						<div class="input-group-prepend">
@@ -207,7 +235,7 @@
 						</button>
 					</div> <!-- form-group// -->
 
-					<p class="text-center">Have an account? <a href="/MessageBoard/views/pageFront/login.html">Log
+					<p class="text-center">Have an account? <a href="/MessageBoard/member/getLoginView">Log
 							In</a> </p>
 				</form>
 

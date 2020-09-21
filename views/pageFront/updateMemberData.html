@@ -36,7 +36,7 @@
 		padding: 0;
 	}
 
-	article{
+	article {
 		position: absolute;
 		top: 50%;
 		left: 50%;
@@ -44,37 +44,59 @@
 		height: 50%;
 	}
 </style>
-<script src="../js/viewModels/memberViewModel.js"></script>
-<script src="../js/viewModels/showViewModel.js"></script>
-<script src="../js/title.js"></script>
-<script>
 
-	let functionType = false;
+<script src="/MessageBoard/views/js/rule.js"></script>
+<script>
 
 	//更新其他資料
 	function showUpdateDate() {
-		$("#mainShow").html(getMemberUpdateDateView());
 
+
+	}
+
+	$(window).ready(() => {
+		$("body").css("display", "none");
+
+		//確認是否登入
 		$.ajax({
-			type: "POST",
-			url: "/MessageBoard/member/getMemberSelfData"
+			type: 'GET',
+			url: '/MessageBoard/member/getSessionUserID'
 		}).then(function (e) {
-			let jsonObj;
-			try {
-				jsonObj = JSON.parse(e);
-			} catch (err) {
-				alert("資料取得錯誤");
+			if (e === 'false') {
+				window.location.href = "/MessageBoard/member/getLoginView";
 			}
-
-			$("#userName").val(jsonObj.userName);
-			$("#userEmail").val(jsonObj.userEmail);
-			$("#userPhone").val(jsonObj.userPhone);
+			$("body").css("display", "inline");
 		});
 
-		$("#btnChangeTypr").text("變更密碼");
+		//格式檢查
+		$("#userName").change(function () {
+			let namaCheckMessage = $('#namaCheckMessage');
+			namaCheckMessage.empty();
+			if (!this.value.match(nameRule)) {
+				namaCheckMessage.text('名字請勿留白');
+			}
+		});
 
+		$("#userEmail").change(function () {
+			let namaCheckMessage = $('#emailCheckMessage');
+			namaCheckMessage.empty();
+			if (!this.value.match(nameRule)) {
+				namaCheckMessage.text('信箱格式錯誤');
+			}
+		});
+
+		$("#userPhone").change(function () {
+			let namaCheckMessage = $('#phoneCheckMessage');
+			namaCheckMessage.empty();
+			if (!this.value.match(nameRule)) {
+				namaCheckMessage.text('電話號碼格式錯誤');
+			}
+		});
+
+		//送出按鈕事件
 		$("#btnSub").click(() => {
 
+			//包裝
 			let member = {
 				"userName": $("#userName").val(),
 				"userEmail": $("#userEmail").val(),
@@ -82,19 +104,21 @@
 				"userPassword": $("#userPassword").val()
 			};
 
-			if (member.userName.length <= 0) {
+			//檢查
+			if (!member.userEmail.match(nameRule)) {
 				alert("名字空白！");
 				return;
 			}
-			let emailRule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
 			if (!member.userEmail.match(emailRule)) {
 				alert("Email格式錯誤");
 				return;
 			}
-			if (!member.userPhone.match(/\d{10}/)) {
+			if (!member.userPhone.match(phoneRule)) {
 				alert("電話格式錯誤");
 				return;
 			}
+
+			//送出
 			let subData = {
 				member: JSON.stringify(member)
 			}
@@ -103,89 +127,15 @@
 				url: "/MessageBoard/member/update",
 				data: subData
 			}).then(function (e) {
-				if (e == 1) {
+				if (e === "1") {
 					alert("更新成功");
 					history.go(0);
 				} else {
 					alert("更新失敗");
 				}
 			});
-
 		});
 
-	}
-
-	//變更密碼
-	function showUpdatePassword() {
-		$("#mainShow").html(getMemberUpdatePasswordView());
-
-		$("#userPassword").change(() => {
-			if (!($("#userPassword").val()).match(/\w{6,30}/)) {
-				$("#passwordCheckMessage").text("密碼格式錯誤！");
-			} else {
-				$("#passwordCheckMessage").empty();
-			}
-		});
-
-		$("#userPasswordAgain").change(() => {
-			if ($("#userPassword").val() != $("#userPasswordAgain").val()) {
-				$("#passwordCheckMessage").text("兩次密碼不一致！");
-			} else {
-				$("#passwordCheckMessage").empty();
-			}
-		});
-
-		$("#btnChangeTypr").text("變更其他資料");
-
-		$("#btnSub").click(() => {
-			if (!($("#userPassword").val()).match(/\w{6,30}/)) {
-				alert("密碼格式錯誤！");
-				return;
-			}
-			if ($("#userPassword").val() != $("#userPasswordAgain").val()) {
-				alert("兩次密碼不一致！");
-				return;
-			}
-
-			let data = {
-				"userPassword": $("#userPassword").val(),
-				"userPasswordAgain": $("#userPasswordAgain").val(),
-				"userOldPassword": $("#userOldPassword").val()
-			}
-			$.ajax({
-				type: "PUT",
-				url: "/MessageBoard/member/updateSelfPassword",
-				data: { 0: JSON.stringify(data) }
-			}).then(function (e) {
-				if (e == 1) {
-					alert("更新成功，請再重新登入");
-					window.location.href = "login.html";
-				} else {
-					alert("更新失敗");
-				}
-			});
-		});
-	}
-
-	//切換功能
-	function changeFuntion() {
-
-		if (functionType) {
-			showUpdatePassword();
-		} else {
-			showUpdateDate();
-		}
-	}
-
-	$(window).ready(() => {
-		changeFuntion();
-
-		$("#btnChangeTypr").click(() => {
-			$("#mainShow").empty();
-			$("#btnSub").off('click');
-			functionType = !functionType;
-			changeFuntion();
-		});
 	});
 </script>
 
@@ -202,32 +152,69 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="/MessageBoard/views/pageFront/index_.html">留言板</a>
+				<a class="navbar-brand" href="/MessageBoard/index">留言板</a>
 			</div>
 
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 				<ul class="nav navbar-nav navbar-right">
-					<li id="showUserName"></li>
-					<li><a href="login.html" id="showLogin">登入</a></li>
-					<li id="showRegistered"><a href="registered.html">註冊</a></li>
+					<li id="showUserName"><a href="#">{{$member['userName']}}</a></li>
+					<li><a href="/MessageBoard/member/getLoginView" id="showLogin">登出</a></li>
 				</ul>
 			</div>
 		</div>
 
 	</nav>
-
 	<main role="main" class="container">
 		<div class="card bg-light">
-			<article class="card-body mx-auto"">
+			<article class="card-body mx-auto">
 				<h4 class="card-title mt-3 text-center">更新會員資料</h4>
 
 				<form>
-					<div id="mainShow"></div>
+					<div id="mainShow">
+						<div class="form-group input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text"> <i class="fa fa-user"></i> </span>
+							</div>
+							<input id="userName" class="form-control" placeholder="請輸入姓名" type="text"
+								value="{{$member['userName']}}">
+						</div>
+						<p class="form-group" id="namaCheckMessage"></p>
+						<!-- form-group// -->
+
+						<div class="form-group input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
+							</div>
+							<input id="userEmail" class="form-control" placeholder="請輸入Email" type="email"
+								value="{{$member['userEmail']}}">
+						</div>
+						<p class="form-group" id="emailCheckMessage"></p>
+						<!-- form-group// -->
+
+						<div class="form-group input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text"> <i class="fa fa-phone"></i> </span>
+							</div>
+							<input id="userPhone" class="form-control" placeholder="請輸入手機號碼" type="text"
+								value="{{$member['userPhone']}}">
+						</div>
+						<p class="form-group" id="phoneCheckMessage"></p>
+						<!-- form-group// -->
+
+						<div class="form-group input-group">
+							<div class="input-group-prepend">
+								<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+							</div>
+							<input id="userPassword" class="form-control" placeholder="請輸入密碼" type="password">
+						</div>
+						<p class="form-group" id="idCheckMessage"></p>
+						<!-- form-group// -->
+
+					</div>
 
 					<div class="form-group">
-						<button type="button" id="btnSub" class="btn btn-primary btn-block"> 更新
-						</button>
-						<button type="button" id="btnChangeTypr" class="btn btn-primary btn-block"></button>
+						<button type="button" id="btnSub" class="btn btn-primary btn-block">更新</button>
+						<a class="btn btn-primary btn-block" href="/MessageBoard/member/getUpdatePasswordView">變更密碼</a>
 					</div> <!-- form-group// -->
 				</form>
 			</article>

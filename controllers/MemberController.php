@@ -8,55 +8,63 @@ class MemberController extends Controller
 
     public function insertByObj($str, $requestMethod)
     {
-        if ($requestMethod != 'POST') {
+        if ($requestMethod !== 'POST') {
             return false;
         }
 
         $jsonObj = json_decode($str);
         $member = new Member();
-        $member->setUserAccount($jsonObj->userAccount);
-        $member->setUserPassword($jsonObj->userPassword);
-        $member->setUserName($jsonObj->userName);
-        $member->setUserEmail($jsonObj->userEmail);
-        $member->setUserPhone($jsonObj->userPhone);
+        try {
+            $member->setUserAccount($jsonObj->userAccount);
+            $member->setUserPassword($jsonObj->userPassword);
+            $member->setUserName($jsonObj->userName);
+            $member->setUserEmail($jsonObj->userEmail);
+            $member->setUserPhone($jsonObj->userPhone);
+        } catch (Exception $err) {
+            return  false;
+        }
 
-        if (MemberService::getDAO()->insertMember(
+        return MemberService::getDAO()->insertMember(
             $member->getUserAccount(),
             $member->getUserPassword(),
             $member->getUserName(),
             $member->getUserEmail(),
             $member->getUserPhone()
-        )) {
-            return true;
-        }
-
-        return false;
+        );
     }
 
     public function update($str, $requestMethod)
     {
-        if (!isset($_SESSION['userID']) || $requestMethod != 'PUT') {
+        if (!isset($_SESSION['userID']) || $requestMethod !== 'PUT') {
             return false;
         }
 
         $jsonObj = json_decode($str);
         $member = new Member();
-        $member->setUserID($_SESSION['userID']);
-        $member->setUserName($jsonObj->userName);
-        $member->setUserEmail($jsonObj->userEmail);
-        $member->setUserPhone($jsonObj->userPhone);
-        $member->setUserPassword($jsonObj->userPassword);
+        try {
+            $member->setUserName($jsonObj->userName);
+            $member->setUserEmail($jsonObj->userEmail);
+            $member->setUserPhone($jsonObj->userPhone);
+            $member->setUserPassword($jsonObj->userPassword);
+        } catch (Exception $err) {
+            return false;
+        }
 
         $memberDAO = MemberService::getDAO();
 
-        if (
-            $memberDAO->checkPassword(
-                $member->getUserID(),
-                $member->getUserPassword()
-            ) && $memberDAO->updateMember($member)
-        ) {
-            return true;
+        if (!$memberDAO->checkPassword(
+            $_SESSION['userID'],
+            $member->getUserPassword()
+        )) {
+            return false;
         }
+
+        return $memberDAO->updateMember(
+            $_SESSION['userID'],
+            $member->getUserName(),
+            $member->getUserEmail(),
+            $member->getUserPhone()
+        );
     }
 
     public function updateSelfPassword($str, $requestMethod)
@@ -64,7 +72,7 @@ class MemberController extends Controller
         $jsonObj = json_decode($str);
         $member = new Member();
         $member->setUserPassword($jsonObj->userPassword);
-        if ((!isset($_SESSION['userID'])) || ($requestMethod != 'PUT') || ($member->getUserPassword() != $jsonObj->userPasswordAgain)) {
+        if ((!isset($_SESSION['userID'])) || ($requestMethod !== 'PUT') || ($member->getUserPassword() !== $jsonObj->userPasswordAgain)) {
             return false;
         }
 
@@ -81,8 +89,8 @@ class MemberController extends Controller
 
     public function login($userAccount, $password)
     {
-        if (($data = MemberService::getDAO()->doLogin($userAccount, $password))->check) {
-            $member = MemberService::getDAO()->getOneMemberByID($data->userID);
+        if (MemberService::getDAO()->doLogin($userAccount, $password)) {
+            $member = MemberService::getDAO()->getOneMemberByUserAccount($userAccount);
 
             $_SESSION["userAccount"] = $member['userAccount'];
             $_SESSION["userName"] = $member['userName'];
@@ -98,6 +106,7 @@ class MemberController extends Controller
         if (isset($_SESSION['userName'])) {
             return $_SESSION['userName'];
         }
+        return 'false';
     }
 
     public function getSessionUserID()
@@ -105,6 +114,7 @@ class MemberController extends Controller
         if (isset($_SESSION['userID'])) {
             return $_SESSION['userID'];
         }
+        return 'false';
     }
 
     public function logout()
@@ -116,16 +126,37 @@ class MemberController extends Controller
 
     public function checkMemberExist($id)
     {
-        return (MemberService::getDAO()->checkMemberExist($id)) > 0;
+        return MemberService::getDAO()->checkMemberExist($id);
     }
-
-    // public function checkEmailExist($email)
-    // {
-    //     return (MemberService::getDAO()->checkEmailExist($email)) > 0;
-    // }
 
     public function getMemberSelfData()
     {
+
         return json_encode(MemberService::getDAO()->getOneMemberByID($_SESSION['userID']));
+    }
+
+    public function getCreateView()
+    {
+        $smarty = SmartyConfig::getSmarty();
+        $smarty->display('registered.html');
+    }
+
+    public function getLoginView()
+    {
+        $smarty = SmartyConfig::getSmarty();
+        $smarty->display('login.html');
+    }
+
+    public function getUpdateView()
+    {
+        $member = MemberService::getDAO()->getOneMemberByID($_SESSION['userID']);
+        $smarty = SmartyConfig::getSmarty();
+        $smarty->assign('member', $member);
+        $smarty->display('updateMemberData.html');
+    }
+
+    public function getUpdatePasswordView(){
+        $smarty = SmartyConfig::getSmarty();
+        $smarty->display('updateMemberPassword.html');
     }
 }

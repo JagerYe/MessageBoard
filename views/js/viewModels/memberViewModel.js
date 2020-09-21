@@ -1,3 +1,3 @@
 function getTitleUserNameView(name) {
-    return `<a href="updateMemberData.html">${name}</a>`;
+    return `<a href="/MessageBoard/member/getUpdateView">${name}</a>`;
 }

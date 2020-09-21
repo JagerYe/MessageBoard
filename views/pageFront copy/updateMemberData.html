@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link rel="icon" href="/MessageBoard/views/img/logo.png">
+
+	<title>留言板</title>
+
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+		integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<!-- Custom styles for this template -->
+	<link href="/MessageBoard/views/css/starter-template.css" rel="stylesheet">
+
+	<!-- Bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+		integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+		crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+		integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+		crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+		integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+		crossorigin="anonymous"></script>
+
+	<!-- ajax -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<style>
+	body {
+		padding: 0;
+	}
+
+	article{
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		height: 50%;
+	}
+</style>
+<script src="/MessageBoard/views/js/viewModels/memberViewModel.js"></script>
+<script src="/MessageBoard/views/js/viewModels/showViewModel.js"></script>
+<script src="/MessageBoard/views/js/title.js"></script>
+<script>
+
+	let functionType = false;
+
+	//更新其他資料
+	function showUpdateDate() {
+		$("#mainShow").html(getMemberUpdateDateView());
+
+		$.ajax({
+			type: "POST",
+			url: "/MessageBoard/member/getMemberSelfData"
+		}).then(function (e) {
+			let jsonObj;
+			try {
+				jsonObj = JSON.parse(e);
+			} catch (err) {
+				alert("資料取得錯誤");
+			}
+
+			$("#userName").val(jsonObj.userName);
+			$("#userEmail").val(jsonObj.userEmail);
+			$("#userPhone").val(jsonObj.userPhone);
+		});
+
+		$("#btnChangeTypr").text("變更密碼");
+
+		$("#btnSub").click(() => {
+
+			let member = {
+				"userName": $("#userName").val(),
+				"userEmail": $("#userEmail").val(),
+				"userPhone": $("#userPhone").val(),
+				"userPassword": $("#userPassword").val()
+			};
+
+			if (member.userName.length <= 0) {
+				alert("名字空白！");
+				return;
+			}
+			let emailRule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
+			if (!member.userEmail.match(emailRule)) {
+				alert("Email格式錯誤");
+				return;
+			}
+			if (!member.userPhone.match(/\d{10}/)) {
+				alert("電話格式錯誤");
+				return;
+			}
+			let subData = {
+				member: JSON.stringify(member)
+			}
+			$.ajax({
+				type: "PUT",
+				url: "/MessageBoard/member/update",
+				data: subData
+			}).then(function (e) {
+				if (e == 1) {
+					alert("更新成功");
+					history.go(0);
+				} else {
+					alert("更新失敗");
+				}
+			});
+
+		});
+
+	}
+
+	//變更密碼
+	function showUpdatePassword() {
+		$("#mainShow").html(getMemberUpdatePasswordView());
+
+		$("#userPassword").change(() => {
+			if (!($("#userPassword").val()).match(/\w{6,30}/)) {
+				$("#passwordCheckMessage").text("密碼格式錯誤！");
+			} else {
+				$("#passwordCheckMessage").empty();
+			}
+		});
+
+		$("#userPasswordAgain").change(() => {
+			if ($("#userPassword").val() != $("#userPasswordAgain").val()) {
+				$("#passwordCheckMessage").text("兩次密碼不一致！");
+			} else {
+				$("#passwordCheckMessage").empty();
+			}
+		});
+
+		$("#btnChangeTypr").text("變更其他資料");
+
+		$("#btnSub").click(() => {
+			if (!($("#userPassword").val()).match(/\w{6,30}/)) {
+				alert("密碼格式錯誤！");
+				return;
+			}
+			if ($("#userPassword").val() != $("#userPasswordAgain").val()) {
+				alert("兩次密碼不一致！");
+				return;
+			}
+
+			let data = {
+				"userPassword": $("#userPassword").val(),
+				"userPasswordAgain": $("#userPasswordAgain").val(),
+				"userOldPassword": $("#userOldPassword").val()
+			}
+			$.ajax({
+				type: "PUT",
+				url: "/MessageBoard/member/updateSelfPassword",
+				data: { 0: JSON.stringify(data) }
+			}).then(function (e) {
+				if (e == 1) {
+					alert("更新成功，請再重新登入");
+					window.location.href = "login.html";
+				} else {
+					alert("更新失敗");
+				}
+			});
+		});
+	}
+
+	//切換功能
+	function changeFuntion() {
+
+		if (functionType) {
+			showUpdatePassword();
+		} else {
+			showUpdateDate();
+		}
+	}
+
+	$(window).ready(() => {
+		changeFuntion();
+
+		$("#btnChangeTypr").click(() => {
+			$("#mainShow").empty();
+			$("#btnSub").off('click');
+			functionType = !functionType;
+			changeFuntion();
+		});
+	});
+</script>
+
+<body>
+
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+					data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="/MessageBoard/views/pageFront/index_.html">留言板</a>
+			</div>
+
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<ul class="nav navbar-nav navbar-right">
+					<li id="showUserName"></li>
+					<li><a href="login.html" id="showLogin">登入</a></li>
+					<li id="showRegistered"><a href="registered.html">註冊</a></li>
+				</ul>
+			</div>
+		</div>
+
+	</nav>
+
+	<main role="main" class="container">
+		<div class="card bg-light">
+			<article class="card-body mx-auto">
+				<h4 class="card-title mt-3 text-center">更新會員資料</h4>
+
+				<form>
+					<div id="mainShow"></div>
+
+					<div class="form-group">
+						<button type="button" id="btnSub" class="btn btn-primary btn-block"> 更新
+						</button>
+						<button type="button" id="btnChangeTypr" class="btn btn-primary btn-block"></button>
+					</div> <!-- form-group// -->
+				</form>
+			</article>
+		</div> <!-- card.// -->
+
+	</main><!-- /.container -->
+
+</body>
+
+</html>

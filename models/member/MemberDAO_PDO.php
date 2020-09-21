@@ -31,7 +31,7 @@ class MemberDAO_PDO implements MemberDAO
     }
 
     //更新會員
-    public function updateMember($member)
+    public function updateMember($userID, $userName, $userEmail, $userPhone)
     {
         try {
             $dbh = Config::getDBConnect();
@@ -42,10 +42,6 @@ class MemberDAO_PDO implements MemberDAO
                                     `userPhone`=:userPhone,
                                     `changeDate`=NOW()
                                     WHERE `userID`=:userID;");
-            $userID = $member->getUserID();
-            $userName = $member->getUserName();
-            $userEmail = $member->getUserEmail();
-            $userPhone = $member->getUserPhone();
             $sth->bindParam("userID", $userID);
             $sth->bindParam("userName", $userName);
             $sth->bindParam("userEmail", $userEmail);
@@ -83,17 +79,32 @@ class MemberDAO_PDO implements MemberDAO
         return true;
     }
 
-    public function getOneMemberByID($userID)
+    public function getOneMemberByUserAccount($userAccount)
     {
         try {
             $dbh = Config::getDBConnect();
-            $sth = $dbh->prepare("SELECT * FROM `Members` WHERE `userID`=:userID;");
-            $sth->bindParam("userID", $userID);
+            $sth = $dbh->prepare("SELECT * FROM `Members` WHERE `userAccount`=:userAccount;");
+            $sth->bindParam("userAccount", $userAccount);
             $sth->execute();
             $request = $sth->fetch(PDO::FETCH_ASSOC);
             $sth = null;
         } catch (PDOException $err) {
-            $dbh->rollBack();
+            return false;
+        }
+        $dbh = null;
+        return $request;
+    }
+
+    public function getOneMemberByID($id)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $sth = $dbh->prepare("SELECT * FROM `Members` WHERE `userID`=:userID;");
+            $sth->bindParam("userID", $id);
+            $sth->execute();
+            $request = $sth->fetch(PDO::FETCH_ASSOC);
+            $sth = null;
+        } catch (PDOException $err) {
             return false;
         }
         $dbh = null;
@@ -111,22 +122,20 @@ class MemberDAO_PDO implements MemberDAO
             if ($request['check'] != 1) {
                 throw new Exception("帳號密碼錯誤");
             }
-            $data = new ArrayObject();
-            $data->userID = $request['userID'];
 
-            $data->check = $this->checkPassword($data->userID, $password, $dbh);
+            $check = $this->checkPassword($request['userID'], $password, $dbh);
             $sth = null;
-        } catch (PDOException $err) {
+        } catch (Exception $err) {
             return false;
         }
         $dbh = null;
-        return $data;
+        return $check;
     }
 
     public function checkPassword($userID, $password, $dbh = null)
     {
         try {
-            if ($dbh == null) {
+            if ($dbh === null) {
                 $dbh = Config::getDBConnect();
             }
             $sth = $dbh->prepare("SELECT `userPassword` FROM `members` WHERE `userID`=:userID");
@@ -152,7 +161,7 @@ class MemberDAO_PDO implements MemberDAO
         } catch (Exception $err) {
             return false;
         }
-        return $request['0'];
+        return $request['0'] > 0;
     }
 
     // public function checkEmailExist($email)

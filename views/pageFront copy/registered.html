@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link rel="icon" href="/MessageBoard/views/img/logo.png">
+
+	<title>留言板</title>
+
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+		integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<!-- Custom styles for this template -->
+	<link href="/MessageBoard/views/css/starter-template.css" rel="stylesheet">
+
+	<!-- Bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+		integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+		crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+		integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+		crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+		integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+		crossorigin="anonymous"></script>
+
+	<!-- ajax -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<style>
+	article {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		height: 50%;
+	}
+	body{
+		padding: 0;
+	}
+</style>
+<script>
+	//防止重新導入這，倒入這就直接回首頁
+	$("body").css("display", "none");
+	$.ajax({
+		type: "GET",
+		url: "/MessageBoard/member/getSessionUserName"
+	}).then(function (e) {
+		if (e === 'false') {
+			$("body").css("display", "inline");
+		} else {
+			window.location.href = "/MessageBoard/views/pageFront/index_.html";
+		}
+	});
+</script>
+<script src="/MessageBoard/views/js/rule.js"></script>
+<script>
+	$(window).ready(() => {
+
+		//確認密碼是否一致
+		$("#userPassword_").change(function () {
+			$("#passwordCheckMessage").empty();
+			if ($("#userPassword").val() != this.value) {
+				$("#passwordCheckMessage").text("密碼不一致！");
+			}
+		});
+
+		//確認密碼格式
+		$("#userPassword").change(function () {
+			$("#passwordCheckMessage").empty();
+			if (!this.value.match(passwordRule)) {
+				$("#passwordCheckMessage").text("密碼格式錯誤！");
+			}
+		});
+
+		//檢驗帳號
+		$("#userAccount").change(function () {
+			$("#idCheckMessage").empty();
+
+			//確認是否重複
+			$.ajax({
+				type: "GET",
+				url: `/MessageBoard/member/checkMemberExist?id=${this.value}`
+			}).then(function (e) {
+				if (e === '1') {
+					$("#idCheckMessage").append("此帳號有人使用<br>");
+				}
+			});
+
+			//格式
+			if (!this.value.match(accountRule)) {
+				$("#idCheckMessage").append("帳號格式錯誤<br>");
+			}
+		});
+
+		//檢測信箱
+		$("#userEmail").change(function () {
+			$("#emailCheckMessage").empty();
+			//格式
+			if (!this.value.match(emailRule)) {
+				$("#emailCheckMessage").text("Email格式錯誤");
+			}
+		});
+
+		//檢查名字
+		$("#userName").change(function () {
+			$("#nameCheckMessage").empty();
+			//格式
+			if (!this.value.match(nameRule)) {
+				$("#nameCheckMessage").text("姓名格式錯誤");
+			}
+		});
+
+		//檢查電話
+		$("#userPhone").change(function () {
+			$("#phoneCheckMessage").empty();
+			//格式
+			if (!this.value.match(phoneRule)) {
+				$("#phoneCheckMessage").text("電話格式錯誤");
+			}
+		});
+
+		$("#btnSub").click(() => {
+
+			let member = {
+				"userAccount": $("#userAccount").val(),
+				"userName": $("#userName").val(),
+				"userEmail": $("#userEmail").val(),
+				"userPhone": $("#userPhone").val(),
+				"userPassword": $("#userPassword").val()
+			};
+			if ((member.userPassword != $("#userPassword_").val()) || !member.userPassword.match(/\w{6,30}/)) {
+				alert("密碼格式錯誤！");
+				return;
+			}
+			if (!member.userName.match(nameRule)) {
+				alert("名字空白！");
+				return;
+			}
+			if (!member.userEmail.match(emailRule)) {
+				alert("Email格式錯誤");
+				return;
+			}
+			if (!member.userPhone.match(phoneRule)) {
+				alert("電話格式錯誤");
+				return;
+			}
+			if (!member.userAccount.match(accountRule)) {
+				alert("帳號格式錯誤");
+				return;
+			}
+			let subData = {
+				member: JSON.stringify(member)
+			}
+			$.ajax({
+				type: "POST",
+				url: "/MessageBoard/member/insertByObj",
+				data: subData
+			}).then(function (e) {
+				if (e === '1') {
+					alert("註冊成功，請登入");
+					window.location.href = "/MessageBoard/views/pageFront/login.html";
+				} else {
+					alert("註冊失敗");
+				}
+			});
+
+		});
+	});
+
+</script>
+
+<body>
+
+	<main role="main" class="container">
+		<div class="panel panel-default">
+			<article class="panel-body mx-auto pagination-centered">
+
+				<h4 class="panel-title mt-3 text-center">註冊</h4>
+
+				<form>
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-user"></i> </span>
+						</div>
+						<input id="userName" class="form-control" placeholder="請輸入姓名" type="text">
+					</div> <!-- form-group// -->
+					<p class="form-group" id="nameCheckMessage"></p>
+
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
+						</div>
+						<input id="userEmail" class="form-control" placeholder="請輸入Email" type="email">
+					</div> <!-- form-group// -->
+					<p class="form-group" id="emailCheckMessage"></p>
+
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-phone"></i> </span>
+						</div>
+						<input id="userPhone" class="form-control" placeholder="請輸入手機號碼" type="text">
+					</div> <!-- form-group// -->
+					<p class="form-group" id="phoneCheckMessage"></p>
+
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-user"></i> </span>
+						</div>
+						<input id="userAccount" class="form-control" placeholder="請輸入帳號" type="text">
+					</div> <!-- form-group// -->
+					<p class="form-group" id="idCheckMessage"></p>
+
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+						</div>
+						<input id="userPassword" class="form-control" placeholder="請輸入密碼" type="password">
+					</div> <!-- form-group// -->
+
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+						</div>
+						<input id="userPassword_" class="form-control" placeholder="請在輸入一次密碼" type="password">
+					</div> <!-- form-group// -->
+					<p class="form-group" id="passwordCheckMessage"></p>
+
+					<div class="form-group">
+						<button type="button" id="btnSub" class="btn btn-primary btn-block"> Create Account
+						</button>
+					</div> <!-- form-group// -->
+
+					<p class="text-center">Have an account? <a href="/MessageBoard/views/pageFront/login.html">Log
+							In</a> </p>
+				</form>
+
+			</article>
+		</div> <!-- panel.// -->
+
+	</main><!-- /.container -->
+
+</body>
+
+</html>

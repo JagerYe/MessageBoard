@@ -86,7 +86,7 @@ class Member implements \JsonSerializable
     }
     public function setUserName($userName)
     {
-        if ($userName === null || $userName == "") {
+        if (!preg_match("/\w+/", $userName)) {
             throw new Exception("名字格式錯誤");
         }
         $this->_userName = $userName;

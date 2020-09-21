@@ -32,7 +32,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <style>
-	form{
+	form {
 		position: absolute;
 		top: 50%;
 		left: 50%;
@@ -48,15 +48,15 @@
 			type: "GET",
 			url: "/MessageBoard/member/getSessionUserName"
 		}).then(function (e) {
-			if (e) {
+			if (e === 'false') {
+				$("body").css("display", "inline");
+			} else {
 				$.ajax({
 					type: "GET",
 					url: "/MessageBoard/member/logout"
 				}).then(() => {
-					window.location.href = "/MessageBoard/views/pageFront/index_.html";
+					window.location.href = "/MessageBoard/index";
 				});
-			} else {
-				$("body").css("display", "inline");
 			}
 		});
 	}
@@ -74,8 +74,8 @@
 				url: "/MessageBoard/member/login",
 				data: data
 			}).then(function (e) {
-				if (e) {
-					window.location.href = "/MessageBoard/views/pageFront/index_.html";
+				if (e === '1') {
+					window.location.href = "/MessageBoard/index";
 					return;
 				}
 				alert("帳密錯誤");
@@ -86,7 +86,7 @@
 
 <body class="text-center">
 	<form class="form-signin" method="post">
-		<a href="/MessageBoard/views/pageFront/index_.html"><img class="mb-4" src="/MessageBoard/views/img/logo.png"
+		<a href="/MessageBoard/index"><img class="mb-4" src="/MessageBoard/views/img/logo.png"
 				alt="回首頁" style="background-color: black;"></a>
 		<h1 class="h3 mb-3 font-weight-normal">會員登入</h1>
 		<label for="userAccount" class="sr-only">帳號</label>
@@ -94,7 +94,7 @@
 		<label for="userPassword" class="sr-only">密碼</label>
 		<input type="password" id="userPassword" name="userPassword" class="form-control" placeholder="密碼" required>
 
-		<a href="/MessageBoard/views/pageFront/registered.html" class="btn btn-lg btn-primary btn-block">註冊</a>
+		<a href="/MessageBoard/member/getCreateView" class="btn btn-lg btn-primary btn-block">註冊</a>
 		<button class="btn btn-lg btn-primary btn-block" id="login" type="button">登入</button>
 		<p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
 	</form>

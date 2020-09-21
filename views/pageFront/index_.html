@@ -92,10 +92,10 @@
 	}
 </style>
 
-<script src="../js/viewModels/showViewModel.js"></script>
-<script src="../js/viewModels/messageViewModel.js"></script>
-<script src="../js/viewModels/memberViewModel.js"></script>
-<script src="../js/title.js"></script>
+<script src="/MessageBoard/views/js/viewModels/showViewModel.js"></script>
+<script src="/MessageBoard/views/js/viewModels/messageViewModel.js"></script>
+<script src="/MessageBoard/views/js/viewModels/memberViewModel.js"></script>
+<script src="/MessageBoard/views/js/title.js"></script>
 <script>
 
 	let userID = -1;
@@ -448,14 +448,14 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="/MessageBoard/views/pageFront/index_.html">留言板</a>
+				<a class="navbar-brand" href="/MessageBoard/index">留言板</a>
 			</div>
 
 			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 				<ul class="nav navbar-nav navbar-right">
 					<li id="showUserName"></li>
-					<li><a href="login.html" id="showLogin">登入</a></li>
-					<li id="showRegistered"><a href="registered.html">註冊</a></li>
+					<li><a href="/MessageBoard/member/getLoginView" id="showLogin">登入</a></li>
+					<li id="showRegistered"><a href="/MessageBoard/member/getCreateView">註冊</a></li>
 				</ul>
 			</div>
 		</div>
