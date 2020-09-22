@@ -14,7 +14,7 @@ function getMainMessageView(userID, boardID, name, message, time, messageID = nu
 
             <div class="row" id="text${messageID}">
                 <div class="col-xs-1"></div>
-                <div class="col-xs-11"><pre id="messageText${messageID}"></pre></div>
+                <div class="col-xs-11"><pre class="messageFontSize" id="messageText${messageID}"></pre></div>
             </div>
             <div class="time">${time}</div>
             <div class="row">
@@ -36,7 +36,7 @@ function getMessageView(userID, name, message, time, messageID = null, isMyself 
                     </div>
                     <div class="row" id="text${messageID}">
                         <div class="col-xs-1"></div>
-                        <div class="col-xs-11"><pre id="messageText${messageID}"></pre></div>
+                        <div class="col-xs-11"><pre class="messageFontSize" id="messageText${messageID}"></pre></div>
                     </div>
                     <div class="time">${time}</div>
                 </div>

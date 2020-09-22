@@ -1,4 +1,27 @@
-<!doctype html>
+<?php
+/* Smarty version 3.1.34-dev-7, created on 2020-09-22 09:39:28
+  from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/registered.html' */
+
+/* @var Smarty_Internal_Template $_smarty_tpl */
+if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
+  'version' => '3.1.34-dev-7',
+  'unifunc' => 'content_5f69aa301a8e66_99996357',
+  'has_nocache_code' => false,
+  'file_dependency' => 
+  array (
+    '4266e68b61910cb6a9b39c90ca2b63b72510aea0' => 
+    array (
+      0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/registered.html',
+      1 => 1600760366,
+      2 => 'file',
+    ),
+  ),
+  'includes' => 
+  array (
+  ),
+),false)) {
+function content_5f69aa301a8e66_99996357 (Smarty_Internal_Template $_smarty_tpl) {
+?><!doctype html>
 <html lang="en">
 
 <head>
@@ -18,18 +41,26 @@
 	<link href="/MessageBoard/views/css/starter-template.css" rel="stylesheet">
 
 	<!-- Bootstrap -->
-	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+	<?php echo '<script'; ?>
+ src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
 		integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-		crossorigin="anonymous"></script>
-	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+		crossorigin="anonymous"><?php echo '</script'; ?>
+>
+	<?php echo '<script'; ?>
+ src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
 		integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-		crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+		crossorigin="anonymous"><?php echo '</script'; ?>
+>
+	<?php echo '<script'; ?>
+ src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
 		integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
-		crossorigin="anonymous"></script>
+		crossorigin="anonymous"><?php echo '</script'; ?>
+>
 
 	<!-- ajax -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<?php echo '<script'; ?>
+ src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"><?php echo '</script'; ?>
+>
 </head>
 <style>
 	article {
@@ -52,7 +83,8 @@
 		color: red;
 	}
 </style>
-<script>
+<?php echo '<script'; ?>
+>
 	//防止重新導入這，倒入這就直接回首頁
 	$("body").css("display", "none");
 	$.ajax({
@@ -65,9 +97,13 @@
 			window.location.href = "/MessageBoard/index";
 		}
 	});
-</script>
-<script src="/MessageBoard/views/js/rule.js"></script>
-<script>
+<?php echo '</script'; ?>
+>
+<?php echo '<script'; ?>
+ src="/MessageBoard/views/js/rule.js"><?php echo '</script'; ?>
+>
+<?php echo '<script'; ?>
+>
 
 	function getCheckNameMessage(value) {
 		let checkMessage = $("#nameCheckMessage");
@@ -239,7 +275,8 @@
 		});
 	});
 
-</script>
+<?php echo '</script'; ?>
+>
 
 <body>
 
@@ -313,4 +350,5 @@
 
 </body>
 
-</html>
+</html><?php }
+}

@@ -1,26 +1,27 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-21 12:06:36
+/* Smarty version 3.1.34-dev-7, created on 2020-09-22 09:55:10
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberData.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f687b2c853486_13596632',
+  'unifunc' => 'content_5f69adde959133_90003581',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '7cc7522cc78bbe366343347f4c0b081800c6f360' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberData.html',
-      1 => 1600682792,
+      1 => 1600761309,
       2 => 'file',
     ),
   ),
   'includes' => 
   array (
+    'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f69adde959133_90003581 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -74,6 +75,14 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 		transform: translate(-50%, -50%);
 		height: 50%;
 	}
+
+	.borderBottomRed {
+		border-bottom: 2px solid red;
+	}
+
+	.errMas {
+		color: red;
+	}
 </style>
 
 <?php echo '<script'; ?>
@@ -81,50 +90,88 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 >
 <?php echo '<script'; ?>
 >
+	let userID = '<?php echo $_smarty_tpl->tpl_vars['userID']->value;?>
+';
 
-	//更新其他資料
-	function showUpdateDate() {
+	function getCheckNameMessage(value) {
+		let checkMessage = $('#nameCheckMessage');
+		let input = $('#userName');
+		let returnStr = '請輸入姓名\r\n';
 
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(nameRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
+	}
 
+	function getCheckEmailMessage(value) {
+		let checkMessage = $('#emailCheckMessage');
+		let input = $('#userEmail');
+		let returnStr = '信箱格式錯誤\r\n';
+
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(emailRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
+	}
+
+	function getCheckPhoneMessage(value) {
+		let checkMessage = $('#phoneCheckMessage');
+		let input = $('#userPhone');
+		let returnStr = '電話號碼格式錯誤\r\n';
+
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(phoneRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
+	}
+
+	function getCheckPasswordMessage(value) {
+		let checkMessage = $('#passwordCheckMessage');
+		let input = $('#userPassword');
+		let returnStr = '請輸入密碼\r\n';
+
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(nameRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
 	}
 
 	$(window).ready(() => {
-		$("body").css("display", "none");
-
-		//確認是否登入
-		$.ajax({
-			type: 'GET',
-			url: '/MessageBoard/member/getSessionUserID'
-		}).then(function (e) {
-			if (e === 'false') {
-				window.location.href = "/MessageBoard/member/getLoginView";
-			}
-			$("body").css("display", "inline");
-		});
+		$('body').css('display', '<?php echo $_smarty_tpl->tpl_vars['isLogin']->value ? 'inline' : 'none';?>
+')
 
 		//格式檢查
 		$("#userName").change(function () {
-			let namaCheckMessage = $('#namaCheckMessage');
-			namaCheckMessage.empty();
-			if (!this.value.match(nameRule)) {
-				namaCheckMessage.text('名字請勿留白');
-			}
+			getCheckNameMessage(this.value);
 		});
 
 		$("#userEmail").change(function () {
-			let namaCheckMessage = $('#emailCheckMessage');
-			namaCheckMessage.empty();
-			if (!this.value.match(nameRule)) {
-				namaCheckMessage.text('信箱格式錯誤');
-			}
+			getCheckEmailMessage(this.value);
 		});
 
 		$("#userPhone").change(function () {
-			let namaCheckMessage = $('#phoneCheckMessage');
-			namaCheckMessage.empty();
-			if (!this.value.match(nameRule)) {
-				namaCheckMessage.text('電話號碼格式錯誤');
-			}
+			getCheckPhoneMessage(this.value);
+		});
+
+		$("#userPassword").change(function () {
+			getCheckPasswordMessage(this.value);
 		});
 
 		//送出按鈕事件
@@ -132,23 +179,21 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 
 			//包裝
 			let member = {
+				"userID": userID,
 				"userName": $("#userName").val(),
 				"userEmail": $("#userEmail").val(),
 				"userPhone": $("#userPhone").val(),
 				"userPassword": $("#userPassword").val()
 			};
 
-			//檢查
-			if (!member.userEmail.match(nameRule)) {
-				alert("名字空白！");
-				return;
-			}
-			if (!member.userEmail.match(emailRule)) {
-				alert("Email格式錯誤");
-				return;
-			}
-			if (!member.userPhone.match(phoneRule)) {
-				alert("電話格式錯誤");
+
+			let errMessage = "";
+			errMessage += getCheckNameMessage(member.userName);
+			errMessage += getCheckEmailMessage(member.userEmail);;
+			errMessage += getCheckPhoneMessage(member.userPhone);;
+			errMessage += getCheckPasswordMessage(member.userPassword);;
+			if (errMessage.length > 0) {
+				alert(errMessage);
 				return;
 			}
 
@@ -163,10 +208,10 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 			}).then(function (e) {
 				if (e === "1") {
 					alert("更新成功");
-					history.go(0);
 				} else {
-					alert("更新失敗");
+					alert("更新失敗，將重新整理頁面");
 				}
+				history.go(0);
 			});
 		});
 
@@ -176,30 +221,9 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 
 <body>
 
-	<nav class="navbar navbar-default">
-		<div class="container-fluid">
-			<!-- Brand and toggle get grouped for better mobile display -->
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-					data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="/MessageBoard/index">留言板</a>
-			</div>
+	<?php $_smarty_tpl->_subTemplateRender('file:./navigationBar.html', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
+?>
 
-			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-				<ul class="nav navbar-nav navbar-right">
-					<li id="showUserName"><a href="#"><?php echo $_smarty_tpl->tpl_vars['member']->value['userName'];?>
-</a></li>
-					<li><a href="/MessageBoard/member/getLoginView" id="showLogin">登出</a></li>
-				</ul>
-			</div>
-		</div>
-
-	</nav>
 	<main role="main" class="container">
 		<div class="card bg-light">
 			<article class="card-body mx-auto">
@@ -215,7 +239,7 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 								value="<?php echo $_smarty_tpl->tpl_vars['member']->value['userName'];?>
 ">
 						</div>
-						<p class="form-group" id="namaCheckMessage"></p>
+						<p class="form-group errMas" id="nameCheckMessage"></p>
 						<!-- form-group// -->
 
 						<div class="form-group input-group">
@@ -226,7 +250,7 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 								value="<?php echo $_smarty_tpl->tpl_vars['member']->value['userEmail'];?>
 ">
 						</div>
-						<p class="form-group" id="emailCheckMessage"></p>
+						<p class="form-group errMas" id="emailCheckMessage"></p>
 						<!-- form-group// -->
 
 						<div class="form-group input-group">
@@ -237,7 +261,7 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 								value="<?php echo $_smarty_tpl->tpl_vars['member']->value['userPhone'];?>
 ">
 						</div>
-						<p class="form-group" id="phoneCheckMessage"></p>
+						<p class="form-group errMas" id="phoneCheckMessage"></p>
 						<!-- form-group// -->
 
 						<div class="form-group input-group">
@@ -246,7 +270,7 @@ function content_5f687b2c853486_13596632 (Smarty_Internal_Template $_smarty_tpl)
 							</div>
 							<input id="userPassword" class="form-control" placeholder="請輸入密碼" type="password">
 						</div>
-						<p class="form-group" id="idCheckMessage"></p>
+						<p class="form-group errMas" id="passwordCheckMessage"></p>
 						<!-- form-group// -->
 
 					</div>

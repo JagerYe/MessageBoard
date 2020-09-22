@@ -50,6 +50,12 @@
 		width: 100%;
 	}
 
+	.messageFontSize{
+		/* font-size: 20px; */
+		padding: 0;
+		line-height: 25px;
+	}
+
 	textarea {
 		resize: none;
 		/* 鎖住使用者高度控制 */
@@ -92,13 +98,14 @@
 	}
 </style>
 
-<script src="/MessageBoard/views/js/viewModels/showViewModel.js"></script>
 <script src="/MessageBoard/views/js/viewModels/messageViewModel.js"></script>
-<script src="/MessageBoard/views/js/viewModels/memberViewModel.js"></script>
-<script src="/MessageBoard/views/js/title.js"></script>
 <script>
 
-	let userID = -1;
+	let userID = "{{$userID}}";
+	let userName = "{{$userName}}";
+	let updateMessageID = 0;
+	let updateBoardID = 0;
+	let updateModalWidth = 0;
 
 	//設定textarea模式
 	function setTextareaMode() {
@@ -106,7 +113,6 @@
 			$(this).height("");
 			$(this).height(this.scrollHeight);
 		});
-
 	}
 
 	//設定與現在的時間差
@@ -152,28 +158,53 @@
 		return Math.floor(time) + "月前";
 	}
 
-
 	$(window).ready(() => {
-		$("body").css("visibility", "hidden");
-		$.ajax({
-			type: "GET",
-			url: "/MessageBoard/member/getSessionUserID"
-		}).then(function (e) {
-			if (e >= 1) {
-				userID = e;
-			} else {
-				$(".addMainMassage").remove();
-			}
-
-			readySetListeners();
-
-			$("body").css("visibility", "visible");
-		});
-
+		subMainListeners();
 		updateMessageView();
-
-
+		setUpdateModal();
 	});
+
+	//初始化監聽器
+	function subMainListeners() {
+
+		//新增主留言
+		$("#subMain").click(() => {
+
+			let board = { authority: 0 };
+			let message = { message: $("#mainMessage").val() };
+			let data = {
+				'userID': userID,
+				'board': board,
+				'message': message
+			};
+			$.ajax({
+				type: "POST",
+				url: "/MessageBoard/message/addMainMessage",
+				data: { 0: JSON.stringify(data) }
+			}).then(function (e) {
+				jsonArr = JSON.parse(e);
+				let boardID = jsonArr.boardID;
+				let messageID = jsonArr.messageID;
+
+				if (boardID >= 1) {
+					$("#massageShow").prepend(getNewMainMessageView(
+						userID,
+						boardID,
+						userName,
+						message.message,
+						getTiemDifference(new Date()),
+						messageID,
+						true
+					));
+					$(`#messageText${messageID}`).text(message.message);
+					addMessageInputGrid(boardID);
+					addDeleteAndUpdateListener(messageID, boardID, true);
+					$("#mainMessage").val("").trigger('input');
+
+				}
+			});
+		});
+	}
 
 	//更新所有主留言板
 	function updateMessageView() {
@@ -186,8 +217,46 @@
 			for (let jsonObj of jsonArr) {
 				getBoardMessages(jsonObj._boardID);
 			}
-
+			// alert($('body').height());
+			alert(clientHeight);
 		});
+	}
+
+	//初始化Modal
+	function setUpdateModal() {
+
+		//修改送出
+		$("#updateSubBtn").click(() => {
+
+			let data = {
+				"messageID": updateMessageID,
+				"message": $("#updateMessageText").val()
+			};
+
+			$.ajax({
+				type: "PUT",
+				url: "/MessageBoard/message/updateMessage",
+				data: { 0: JSON.stringify(data) }
+			}).then(function (e) {
+				try {
+					let jsonObj = JSON.parse(e);
+					getBoardMessages(updateBoardID, true);
+					$("#updateCloseBtn").trigger("click");
+				} catch (err) {
+					alert("更新失敗");
+				}
+			});
+		});
+
+		//修改取消
+		$("#updateMessageModal").on('hide.bs.modal', function () {
+			let updateMessageText = $("#updateMessageText");
+			updateMessageID = 0;
+			updateBoardID = 0;
+			updateModalWidth = updateMessageText.width();
+			updateMessageText.val("");
+		});
+
 	}
 
 	//更新單一留言板
@@ -246,53 +315,11 @@
 			}
 
 			//新增輸入面板
-			if (userID > 0) {
+			if ('{{$isLogin}}' === '1') {
 				addMessageInputGrid(boardID);
 			}
 		});
 
-	}
-
-	//初始化監聽器
-	function readySetListeners() {
-		setTextareaMode();
-
-		//新增主留言
-		$("#subMain").click(() => {
-
-			let board = { authority: 0 };
-			let message = { message: $("#mainMessage").val() };
-			let data = {
-				'board': board,
-				'message': message
-			};
-			$.ajax({
-				type: "POST",
-				url: "/MessageBoard/message/addMainMessage",
-				data: { 0: JSON.stringify(data) }
-			}).then(function (e) {
-				jsonArr = JSON.parse(e);
-				let boardID = jsonArr.boardID;
-				let messageID = jsonArr.messageID;
-
-				if (boardID >= 1) {
-					$("#massageShow").prepend(getNewMainMessageView(
-						userID,
-						boardID,
-						userName,
-						message.message,
-						getTiemDifference(new Date()),
-						messageID,
-						true
-					));
-					$(`#messageText${messageID}`).text(message.message);
-					addMessageInputGrid(boardID);
-					addDeleteAndUpdateListener(messageID, boardID, true);
-					$("#mainMessage").val("").trigger('input');
-
-				}
-			});
-		});
 	}
 
 	function addMessageInputGrid(boardID) {
@@ -300,6 +327,7 @@
 		$(`#subMessage${boardID}`).click(() => {
 			let message = $(`#addMessage${boardID}`).val();
 			let data = {
+				'userID': userID,
 				'boardID': boardID,
 				'message': message
 			};
@@ -331,6 +359,9 @@
 
 		//刪除按鈕
 		$(`#deleteMessage${messageID}`).click(() => {
+			if (!confirm('刪除並不能解決問題，但能解決這則留言，確定要刪除？')) {
+				return;
+			}
 			$.ajax({
 				type: "DELETE",
 				url: "/MessageBoard/message/deleteMessage",
@@ -350,86 +381,16 @@
 
 		//修改按鈕
 		$(`#updateMessageBtn${messageID}`).click(function () {
-			$('#myModal').modal('show');
 
-			$("#updateMessageText").val($(`#text${messageID}`).children().last().text());
-			$("#updateMessageText").trigger('input');
+			let updateMessageText = $("#updateMessageText");
+			updateMessageText.val($(`#text${messageID}`).children().last().text());
 
-			$("#updateMessageModal").ready(function () {
-				$("#updateMessageText").height(function (e) {
-					let a = (this);
-				});
-			});
+			//因產生modal期間textarea的scrollHeight為0，故需找其他參照點來做
+			let a = $(`#messageText${messageID}`).css('height');
+			updateMessageText.css('height', $(`#messageText${messageID}`).css('height'));
 
-			//修改送出
-			$("#updateSubBtn").click(() => {
-
-				let data = {
-					"messageID": messageID,
-					"message": $("#updateMessageText").val()
-				};
-
-				$("#updateMessageText").height(function (e) {
-					let a = (this);
-				});
-
-				$.ajax({
-					type: "PUT",
-					url: "/MessageBoard/message/updateMessage",
-					data: { 0: JSON.stringify(data) }
-				}).then(function (e) {
-					try {
-						let jsonObj = JSON.parse(e);
-						getBoardMessages(boardID, true);
-						$("#updateCloseBtn").trigger("click");
-					} catch (err) {
-						alert("更新失敗");
-					}
-				});
-			});
-
-			//修改取消
-			$("#updateCloseBtn").click(() => {
-				$("#updateSubBtn").off('click');
-				$("#updateCloseBtn").off('click');
-				$("#updateMessageText").empty();
-			});
-
-
-			// let divIdStr = isBoard ? "mainMessageShow" : "message";
-
-			// $(`#text${messageID}`).html(getInputGridMessageView(messageID, $(`#text${messageID}`).children().last().text(), true));
-			// $(this).parent().children("button").remove();
-
-			// //上傳更新按鈕
-			// $(`#updateMessageSub${messageID}`).click(() => {
-			// 	let data = {
-			// 		"messageID": messageID,
-			// 		"message": $(`#updateMessage${messageID}`).val()
-			// 	};
-
-			// 	$.ajax({
-			// 		type: "PUT",
-			// 		url: "/MessageBoard/message/updateMessage",
-			// 		data: { 0: JSON.stringify(data) }
-			// 	}).then(function (e) {
-			// 		try {
-			// 			let jsonObj = JSON.parse(e);
-			// 			getBoardMessages(boardID, true);
-			// 		} catch (err) {
-			// 			alert("更新失敗");
-			// 		}
-			// 	});
-			// });
-
-			// //取消按鈕
-			// $(`#updateCancelBtn${messageID}`).click(() => {
-			// 	// thisHtmlParent.html(saveMessageStatus);
-			// 	getBoardMessages(boardID, true);
-			// });
-
-			// setTextareaMode();
-			// $(`#updateMessage${messageID}`).trigger('input');
+			updateMessageID = messageID;
+			updateBoardID = boardID;
 		});
 
 	}
@@ -437,36 +398,15 @@
 </script>
 
 <body>
-	<nav class="navbar navbar-default">
-		<div class="container-fluid">
-			<!-- Brand and toggle get grouped for better mobile display -->
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-					data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="/MessageBoard/index">留言板</a>
-			</div>
 
-			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-				<ul class="nav navbar-nav navbar-right">
-					<li id="showUserName"></li>
-					<li><a href="/MessageBoard/member/getLoginView" id="showLogin">登入</a></li>
-					<li id="showRegistered"><a href="/MessageBoard/member/getCreateView">註冊</a></li>
-				</ul>
-			</div>
-		</div>
-
-	</nav>
+	{{include file='./navigationBar.html'}}
 
 	<main class="container">
 
 		<div class="row">
 			<div class="col-xs-2"></div>
 			<div class="col-xs-8">
+				{{if $isLogin === true}}
 				<div class="addMainMassage">
 					<h2>來說點什麼吧</h2>
 					<textarea id="mainMessage"></textarea>
@@ -475,6 +415,7 @@
 					</div>
 					<br>
 				</div>
+				{{/if}}
 
 				<div id="massageShow"></div>
 			</div>

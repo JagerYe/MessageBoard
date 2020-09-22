@@ -9,18 +9,19 @@ class MessageController extends Controller
 
     public function addMainMessage($str, $requestMethod)
     {
+        $json = json_decode($str);
+
         //阻擋未登入者
-        if (!isset($_SESSION['userID']) || $requestMethod != 'POST') {
+        if (!isset($_SESSION['userID']) || $requestMethod != 'POST' || $_SESSION['userID'] !== $json->userID) {
             return false;
         }
 
-        $jsonArr = json_decode($str);
-        // $board = $jsonArr['board'];
+        // $board = $json['board'];
         $board = new Board();
-        $board->setAuthority($jsonArr->board->authority);
+        $board->setAuthority($json->board->authority);
 
         $message = new Message();
-        $message->setMessage($jsonArr->message->message);
+        $message->setMessage($json->message->message);
         $data = BoardService::getDAO()->insertBoard($_SESSION['userID'], $board->getAuthority(), $message);
 
 
@@ -29,15 +30,17 @@ class MessageController extends Controller
 
     public function addMessage($str, $requestMethod)
     {
+        $json = json_decode($str);
+
         //阻擋未登入者
-        if (!isset($_SESSION['userID']) || $requestMethod != 'POST') {
+        if (!isset($_SESSION['userID']) || $requestMethod != 'POST' || $_SESSION['userID'] !== $json->userID) {
             return false;
         }
 
-        $jsonObj = json_decode($str);
+
         $message = new Message();
-        $message->setBoardID($jsonObj->boardID);
-        $message->setMessage($jsonObj->message);
+        $message->setBoardID($json->boardID);
+        $message->setMessage($json->message);
 
         return MessageService::getDAO()->insertMessage(
             $message->getBoardID(),
@@ -78,10 +81,10 @@ class MessageController extends Controller
 
     public function updateMessage($str, $requestMethod)
     {
-        $jsonObj = json_decode($str);
+        $json = json_decode($str);
         $message = new Message();
-        $message->setMessageID($jsonObj->messageID);
-        $message->setMessage($jsonObj->message);
+        $message->setMessageID($json->messageID);
+        $message->setMessage($json->message);
         $messageDAO = MessageService::getDAO();
 
         if (!isset($_SESSION['empID']) && ($requestMethod != 'PUT' || $messageDAO->getOneMessageByID($message->getMessageID())->getUserID() != $_SESSION['userID'])) {

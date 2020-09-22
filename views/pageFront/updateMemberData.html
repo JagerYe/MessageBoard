@@ -43,54 +43,98 @@
 		transform: translate(-50%, -50%);
 		height: 50%;
 	}
+
+	.borderBottomRed {
+		border-bottom: 2px solid red;
+	}
+
+	.errMas {
+		color: red;
+	}
 </style>
 
 <script src="/MessageBoard/views/js/rule.js"></script>
 <script>
+	let userID = '{{$userID}}';
 
-	//更新其他資料
-	function showUpdateDate() {
+	function getCheckNameMessage(value) {
+		let checkMessage = $('#nameCheckMessage');
+		let input = $('#userName');
+		let returnStr = '請輸入姓名\r\n';
 
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(nameRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
+	}
 
+	function getCheckEmailMessage(value) {
+		let checkMessage = $('#emailCheckMessage');
+		let input = $('#userEmail');
+		let returnStr = '信箱格式錯誤\r\n';
+
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(emailRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
+	}
+
+	function getCheckPhoneMessage(value) {
+		let checkMessage = $('#phoneCheckMessage');
+		let input = $('#userPhone');
+		let returnStr = '電話號碼格式錯誤\r\n';
+
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(phoneRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
+	}
+
+	function getCheckPasswordMessage(value) {
+		let checkMessage = $('#passwordCheckMessage');
+		let input = $('#userPassword');
+		let returnStr = '請輸入密碼\r\n';
+
+		checkMessage.empty();
+		input.removeClass('borderBottomRed');
+		if (!value.match(nameRule)) {
+			checkMessage.text(returnStr);
+			input.addClass('borderBottomRed');
+			return returnStr;
+		}
+		return "";
 	}
 
 	$(window).ready(() => {
-		$("body").css("display", "none");
-
-		//確認是否登入
-		$.ajax({
-			type: 'GET',
-			url: '/MessageBoard/member/getSessionUserID'
-		}).then(function (e) {
-			if (e === 'false') {
-				window.location.href = "/MessageBoard/member/getLoginView";
-			}
-			$("body").css("display", "inline");
-		});
+		$('body').css('display', '{{($isLogin)?inline:none}}')
 
 		//格式檢查
 		$("#userName").change(function () {
-			let namaCheckMessage = $('#namaCheckMessage');
-			namaCheckMessage.empty();
-			if (!this.value.match(nameRule)) {
-				namaCheckMessage.text('名字請勿留白');
-			}
+			getCheckNameMessage(this.value);
 		});
 
 		$("#userEmail").change(function () {
-			let namaCheckMessage = $('#emailCheckMessage');
-			namaCheckMessage.empty();
-			if (!this.value.match(nameRule)) {
-				namaCheckMessage.text('信箱格式錯誤');
-			}
+			getCheckEmailMessage(this.value);
 		});
 
 		$("#userPhone").change(function () {
-			let namaCheckMessage = $('#phoneCheckMessage');
-			namaCheckMessage.empty();
-			if (!this.value.match(nameRule)) {
-				namaCheckMessage.text('電話號碼格式錯誤');
-			}
+			getCheckPhoneMessage(this.value);
+		});
+
+		$("#userPassword").change(function () {
+			getCheckPasswordMessage(this.value);
 		});
 
 		//送出按鈕事件
@@ -98,23 +142,21 @@
 
 			//包裝
 			let member = {
+				"userID": userID,
 				"userName": $("#userName").val(),
 				"userEmail": $("#userEmail").val(),
 				"userPhone": $("#userPhone").val(),
 				"userPassword": $("#userPassword").val()
 			};
 
-			//檢查
-			if (!member.userEmail.match(nameRule)) {
-				alert("名字空白！");
-				return;
-			}
-			if (!member.userEmail.match(emailRule)) {
-				alert("Email格式錯誤");
-				return;
-			}
-			if (!member.userPhone.match(phoneRule)) {
-				alert("電話格式錯誤");
+
+			let errMessage = "";
+			errMessage += getCheckNameMessage(member.userName);
+			errMessage += getCheckEmailMessage(member.userEmail);;
+			errMessage += getCheckPhoneMessage(member.userPhone);;
+			errMessage += getCheckPasswordMessage(member.userPassword);;
+			if (errMessage.length > 0) {
+				alert(errMessage);
 				return;
 			}
 
@@ -129,10 +171,10 @@
 			}).then(function (e) {
 				if (e === "1") {
 					alert("更新成功");
-					history.go(0);
 				} else {
-					alert("更新失敗");
+					alert("更新失敗，將重新整理頁面");
 				}
+				history.go(0);
 			});
 		});
 
@@ -141,29 +183,8 @@
 
 <body>
 
-	<nav class="navbar navbar-default">
-		<div class="container-fluid">
-			<!-- Brand and toggle get grouped for better mobile display -->
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-					data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="/MessageBoard/index">留言板</a>
-			</div>
+	{{include file='./navigationBar.html'}}
 
-			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-				<ul class="nav navbar-nav navbar-right">
-					<li id="showUserName"><a href="#">{{$member['userName']}}</a></li>
-					<li><a href="/MessageBoard/member/getLoginView" id="showLogin">登出</a></li>
-				</ul>
-			</div>
-		</div>
-
-	</nav>
 	<main role="main" class="container">
 		<div class="card bg-light">
 			<article class="card-body mx-auto">
@@ -178,7 +199,7 @@
 							<input id="userName" class="form-control" placeholder="請輸入姓名" type="text"
 								value="{{$member['userName']}}">
 						</div>
-						<p class="form-group" id="namaCheckMessage"></p>
+						<p class="form-group errMas" id="nameCheckMessage"></p>
 						<!-- form-group// -->
 
 						<div class="form-group input-group">
@@ -188,7 +209,7 @@
 							<input id="userEmail" class="form-control" placeholder="請輸入Email" type="email"
 								value="{{$member['userEmail']}}">
 						</div>
-						<p class="form-group" id="emailCheckMessage"></p>
+						<p class="form-group errMas" id="emailCheckMessage"></p>
 						<!-- form-group// -->
 
 						<div class="form-group input-group">
@@ -198,7 +219,7 @@
 							<input id="userPhone" class="form-control" placeholder="請輸入手機號碼" type="text"
 								value="{{$member['userPhone']}}">
 						</div>
-						<p class="form-group" id="phoneCheckMessage"></p>
+						<p class="form-group errMas" id="phoneCheckMessage"></p>
 						<!-- form-group// -->
 
 						<div class="form-group input-group">
@@ -207,7 +228,7 @@
 							</div>
 							<input id="userPassword" class="form-control" placeholder="請輸入密碼" type="password">
 						</div>
-						<p class="form-group" id="idCheckMessage"></p>
+						<p class="form-group errMas" id="passwordCheckMessage"></p>
 						<!-- form-group// -->
 
 					</div>
