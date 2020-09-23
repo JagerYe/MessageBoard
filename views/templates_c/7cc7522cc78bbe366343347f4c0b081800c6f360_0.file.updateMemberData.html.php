@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-22 09:55:10
+/* Smarty version 3.1.34-dev-7, created on 2020-09-23 08:37:33
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberData.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f69adde959133_90003581',
+  'unifunc' => 'content_5f6aed2db15382_61579095',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '7cc7522cc78bbe366343347f4c0b081800c6f360' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberData.html',
-      1 => 1600761309,
+      1 => 1600842670,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f69adde959133_90003581 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -89,9 +89,15 @@ function content_5f69adde959133_90003581 (Smarty_Internal_Template $_smarty_tpl)
  src="/MessageBoard/views/js/rule.js"><?php echo '</script'; ?>
 >
 <?php echo '<script'; ?>
+ src="/MessageBoard/views/js/title.js"><?php echo '</script'; ?>
 >
-	let userID = '<?php echo $_smarty_tpl->tpl_vars['userID']->value;?>
+<?php echo '<script'; ?>
+>
+	let userID = '<?php echo $_smarty_tpl->tpl_vars['isLogin']->value ? $_smarty_tpl->tpl_vars['userID']->value : -1;?>
 ';
+	if(userID<0){
+		window.location.href = "/MessageBoard/member/getLoginView";
+	}
 
 	function getCheckNameMessage(value) {
 		let checkMessage = $('#nameCheckMessage');
@@ -220,10 +226,10 @@ function content_5f69adde959133_90003581 (Smarty_Internal_Template $_smarty_tpl)
 >
 
 <body>
-
+<?php if ($_smarty_tpl->tpl_vars['isLogin']->value) {?>
 	<?php $_smarty_tpl->_subTemplateRender('file:./navigationBar.html', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
-
+	<div class="blank"></div>
 	<main role="main" class="container">
 		<div class="card bg-light">
 			<article class="card-body mx-auto">
@@ -284,7 +290,7 @@ function content_5f69adde959133_90003581 (Smarty_Internal_Template $_smarty_tpl)
 		</div> <!-- card.// -->
 
 	</main><!-- /.container -->
-
+<?php }?>
 </body>
 
 </html><?php }

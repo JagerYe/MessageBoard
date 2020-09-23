@@ -27,34 +27,13 @@ class BoardDAO_PDO implements BoardDAO
             $data['messageID'] = $messageID;
         } catch (PDOException $err) {
             $dbh->rollBack();
-            return false;
+            return 'false';
         } catch (Exception $err) {
-            return false;
+            return 'false';
         }
         $dbh = null;
 
         return $data;
-    }
-
-    //取得更新畫面所需資料
-    public function getUpdateDateByMessageID($messageID)
-    {
-        try {
-            $dbh = Config::getDBConnect();
-            $sth = $dbh->prepare("SELECT b.`boardID`, `authority`, `messageID` FROM `Boards` AS b
-                                    INNER JOIN `Messages` AS m ON m.`boardID`=b.`boardID`
-                                    WHERE b.`boardID`=(SELECT `boardID` FROM `Messages` WHERE `messageID`=:messageID)
-                                    ORDER BY `messageID` LIMIT 1;");
-            $sth->bindParam("messageID", $messageID);
-            $sth->execute();
-            $request = $sth->fetch(PDO::FETCH_ASSOC);
-            $sth = null;
-        } catch (PDOException $err) {
-            $dbh = null;
-            return false;
-        }
-        $dbh = null;
-        return $request;
     }
 
     public function getAllPublic()
@@ -67,10 +46,28 @@ class BoardDAO_PDO implements BoardDAO
             $request = $sth->fetchAll(PDO::FETCH_ASSOC);
             $sth = null;
         } catch (PDOException $err) {
-            return false;
+            return 'false';
         }
         $dbh = null;
-        return Board::dbDatasToModelsArray($request);
+        return $request;
+    }
+
+    public function getSomePublic($id = null)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $sth = $dbh->prepare("SELECT `boardID`, `userID`, `creationDate`, `changeDate`, `authority` FROM `Boards`
+                                    WHERE `authority`= 0 && `boardID`<IFNULL(:boardID, (~0 >> 32)) ORDER BY `boardID` DESC
+                                    LIMIT 5;");
+            $sth->bindParam("boardID", $id);
+            $sth->execute();
+            $request = $sth->fetchAll(PDO::FETCH_ASSOC);
+            $sth = null;
+        } catch (PDOException $err) {
+            return 'false';
+        }
+        $dbh = null;
+        return $request;
     }
 
     //取得單會員所有留言板，View未完成

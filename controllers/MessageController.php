@@ -13,7 +13,7 @@ class MessageController extends Controller
 
         //阻擋未登入者
         if (!isset($_SESSION['userID']) || $requestMethod != 'POST' || $_SESSION['userID'] !== $json->userID) {
-            return false;
+            return 'false';
         }
 
         // $board = $json['board'];
@@ -22,10 +22,8 @@ class MessageController extends Controller
 
         $message = new Message();
         $message->setMessage($json->message->message);
-        $data = BoardService::getDAO()->insertBoard($_SESSION['userID'], $board->getAuthority(), $message);
 
-
-        return json_encode($data);
+        return json_encode(BoardService::getDAO()->insertBoard($_SESSION['userID'], $board->getAuthority(), $message));
     }
 
     public function addMessage($str, $requestMethod)
@@ -34,7 +32,7 @@ class MessageController extends Controller
 
         //阻擋未登入者
         if (!isset($_SESSION['userID']) || $requestMethod != 'POST' || $_SESSION['userID'] !== $json->userID) {
-            return false;
+            return 'false';
         }
 
 
@@ -50,9 +48,15 @@ class MessageController extends Controller
     }
 
     //取得所有公開版
-    public function getPublicBoard()
+    public function getAllPublicBoard()
     {
         return json_encode(BoardService::getDAO()->getAllPublic());
+    }
+
+    public function getSomePublicBoards($id)
+    {
+        $id = ($id < 0) ? null : $id;
+        return json_encode(BoardService::getDAO()->getSomePublic($id));
     }
 
     public function getBoardMessages($id)
@@ -64,19 +68,19 @@ class MessageController extends Controller
     {
         $messageDAO = MessageService::getDAO();
 
-        if (!isset($_SESSION['empID']) && ($requestMethod != 'DELETE' || $messageDAO->getOneMessageByID($id)->getUserID() != $_SESSION['userID'])) {
+        if (!isset($_SESSION['empID']) && ($requestMethod != 'DELETE' || $messageDAO->getOneMessageByID($id)['userID'] != $_SESSION['userID'])) {
             return false;
         }
 
         //判斷是否為第一個留言，如果是就直接刪除
-        if (($boardID = $messageDAO->checkIsBoardByID($id)) == 0) {
+        if (($boardID = $messageDAO->checkIsBoardByID($id)) === 'false') {
             $data['message'] = $id;
-            return ($messageDAO->deleteMessageByID($id)) ? json_encode($data) : false;
+            return ($messageDAO->deleteMessageByID($id)) ? json_encode($data) : 'false';
         }
 
         $data['board'] = $id;
         //刪除留言板
-        return (BoardService::getDAO()->deleteByID($boardID)) ? json_encode($data) : false;
+        return (BoardService::getDAO()->deleteByID($boardID)) ? json_encode($data) : 'false';
     }
 
     public function updateMessage($str, $requestMethod)
@@ -87,14 +91,10 @@ class MessageController extends Controller
         $message->setMessage($json->message);
         $messageDAO = MessageService::getDAO();
 
-        if (!isset($_SESSION['empID']) && ($requestMethod != 'PUT' || $messageDAO->getOneMessageByID($message->getMessageID())->getUserID() != $_SESSION['userID'])) {
+        if (!isset($_SESSION['empID']) && ($requestMethod != 'PUT' || $messageDAO->getOneMessageByID($message->getMessageID())['userID'] != $_SESSION['userID'])) {
             return false;
         }
 
-        if (!$messageDAO->updateMessage($message)) {
-            return false;
-        }
-
-        return json_encode(BoardService::getDAO()->getUpdateDateByMessageID($message->getMessageID()));
+        return $messageDAO->updateMessage($message->getMessageID(), $message->getMessage());
     }
 }

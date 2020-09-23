@@ -156,13 +156,14 @@ class MemberController extends Controller
 
     public function getUpdateView()
     {
-        $member = MemberService::getDAO()->getOneMemberByID($_SESSION['userID']);
         $smarty = SmartyConfig::getSmarty();
-        $smarty->assign('member', $member);
+        if ($isLogin = isset($_SESSION['userID'])) {
+            $member = MemberService::getDAO()->getOneMemberByID($_SESSION['userID']);
+            $smarty->assign('member', $member);
+            $smarty->assign('userName',  $_SESSION['userName']);
+            $smarty->assign('userID',  $_SESSION['userID']);
+        }
 
-        $isLogin = isset($_SESSION['userID']);
-        $smarty->assign('userName', ($isLogin) ? $_SESSION['userName'] : '');
-        $smarty->assign('userID', ($isLogin) ? $_SESSION['userID'] : '');
         $smarty->assign('isLogin', $isLogin);
         $smarty->assign('isUpdate', true);
 
@@ -173,11 +174,14 @@ class MemberController extends Controller
     {
         $smarty = SmartyConfig::getSmarty();
 
-        $isLogin = isset($_SESSION['userID']);
+        if ($isLogin = isset($_SESSION['userID'])) {
+            $smarty->assign('userID', $_SESSION['userID']);
+            $smarty->assign('userName', $_SESSION['userName']);
+        }
+
         $smarty->assign('isLogin', $isLogin);
         $smarty->assign('isUpdate', true);
-        $smarty->assign('userID', ($isLogin) ? $_SESSION['userID'] : '');
-        $smarty->assign('userName', ($isLogin) ? $_SESSION['userName'] : "");
+
 
         $smarty->display('updateMemberPassword.html');
     }

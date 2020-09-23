@@ -54,8 +54,12 @@
 </style>
 
 <script src="/MessageBoard/views/js/rule.js"></script>
+<script src="/MessageBoard/views/js/title.js"></script>
 <script>
-	let userID = '{{$userID}}';
+	let userID = '{{($isLogin)?$userID:-1}}';
+	if(userID<0){
+		window.location.href = "/MessageBoard/member/getLoginView";
+	}
 
 	function getCheckNameMessage(value) {
 		let checkMessage = $('#nameCheckMessage');
@@ -182,9 +186,9 @@
 </script>
 
 <body>
-
+{{if $isLogin}}
 	{{include file='./navigationBar.html'}}
-
+	<div class="blank"></div>
 	<main role="main" class="container">
 		<div class="card bg-light">
 			<article class="card-body mx-auto">
@@ -242,7 +246,7 @@
 		</div> <!-- card.// -->
 
 	</main><!-- /.container -->
-
+{{/if}}
 </body>
 
 </html>

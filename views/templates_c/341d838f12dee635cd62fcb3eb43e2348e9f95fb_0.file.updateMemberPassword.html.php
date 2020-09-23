@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-22 08:46:26
+/* Smarty version 3.1.34-dev-7, created on 2020-09-23 08:46:33
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberPassword.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f699dc2d34c33_96391850',
+  'unifunc' => 'content_5f6aef498ad705_66895082',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '341d838f12dee635cd62fcb3eb43e2348e9f95fb' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberPassword.html',
-      1 => 1600757184,
+      1 => 1600843580,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f699dc2d34c33_96391850 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6aef498ad705_66895082 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -89,9 +89,15 @@ function content_5f699dc2d34c33_96391850 (Smarty_Internal_Template $_smarty_tpl)
  src="/MessageBoard/views/js/rule.js"><?php echo '</script'; ?>
 >
 <?php echo '<script'; ?>
+ src="/MessageBoard/views/js/title.js"><?php echo '</script'; ?>
 >
-	let userID = '<?php echo $_smarty_tpl->tpl_vars['userID']->value;?>
+<?php echo '<script'; ?>
+>
+	let userID = '<?php echo $_smarty_tpl->tpl_vars['isLogin']->value ? $_smarty_tpl->tpl_vars['userID']->value : -1;?>
 ';
+	if(userID<0){
+		window.location.href = "/MessageBoard/member/getLoginView";
+	}
 
 	function getCheckMessage(fun, value) {
 		let checkMessage = $(`#${(fun === 'passwordAgain') ? 'password' : fun}CheckMessage`);
@@ -190,6 +196,7 @@ function content_5f699dc2d34c33_96391850 (Smarty_Internal_Template $_smarty_tpl)
 
 	<?php $_smarty_tpl->_subTemplateRender('file:./navigationBar.html', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
+	<div class="blank"></div>
 	<main role="main" class="container">
 		<div class="card bg-light">
 			<article class="card-body mx-auto">

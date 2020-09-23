@@ -22,23 +22,19 @@ class MessageDAO_PDO implements MessageDAO
             $sth = null;
         } catch (PDOException $err) {
             $dbh->rollBack();
-            return false;
+            return 'false';
         }
         $dbh = null;
         return $id;
     }
 
     //更新
-    public function updateMessage($messageObj)
+    public function updateMessage($messageID, $message)
     {
         try {
             $dbh = Config::getDBConnect();
             $dbh->beginTransaction();
             $sth = $dbh->prepare("UPDATE `messages` SET `changeDate`=NOW(),`message`=:message WHERE `messageID`=:messageID");
-
-            $messageID = $messageObj->getMessageID();
-            $message = $messageObj->getMessage();
-
 
             $sth->bindParam("messageID", $messageID);
             $sth->bindParam("message", $message);
@@ -70,10 +66,10 @@ class MessageDAO_PDO implements MessageDAO
             $sth = null;
         } catch (PDOException $err) {
             $dbh->rollBack();
-            return false;
+            return 'false';
         }
         $dbh = null;
-        return Message::dbDatasToModelsArray($request);
+        return $request;
     }
 
     //取得一個的留言
@@ -93,7 +89,7 @@ class MessageDAO_PDO implements MessageDAO
             return false;
         }
         $dbh = null;
-        return Message::dbDataToModel($request);
+        return $request;
     }
 
     public function deleteMessageByID($id)
@@ -110,7 +106,7 @@ class MessageDAO_PDO implements MessageDAO
         } catch (PDOException $err) {
             $dbh->rollBack();
             $dbh = null;
-            return false;
+            return 'false';
         }
         $dbh = null;
         return $request > 0;
@@ -146,10 +142,9 @@ class MessageDAO_PDO implements MessageDAO
             $sth = null;
         } catch (PDOException $err) {
             $dbh = null;
-            return false;
+            return 'false';
         }
         $dbh = null;
-        return isset($request['0']) ? $request['0'] : false;
+        return isset($request['0']) ? $request['0'] : 'false';
     }
-
 }

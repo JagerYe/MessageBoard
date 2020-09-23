@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-22 12:00:18
+/* Smarty version 3.1.34-dev-7, created on 2020-09-23 08:46:40
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f69cb32b1f437_53398714',
+  'unifunc' => 'content_5f6aef50885ca3_83138105',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '2d01ea7aaec70d79310c521b2a42841a2ed34100' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html',
-      1 => 1600768817,
+      1 => 1600841124,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -82,7 +82,7 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 		width: 100%;
 	}
 
-	.messageFontSize{
+	.messageFontSize {
 		/* font-size: 20px; */
 		padding: 0;
 		line-height: 25px;
@@ -134,6 +134,9 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
  src="/MessageBoard/views/js/viewModels/messageViewModel.js"><?php echo '</script'; ?>
 >
 <?php echo '<script'; ?>
+ src="/MessageBoard/views/js/title.js"><?php echo '</script'; ?>
+>
+<?php echo '<script'; ?>
 >
 
 	let userID = "<?php echo $_smarty_tpl->tpl_vars['userID']->value;?>
@@ -143,6 +146,8 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 	let updateMessageID = 0;
 	let updateBoardID = 0;
 	let updateModalWidth = 0;
+	let lastBoardID = -1;
+	let getBoardProcessing = false;
 
 	//設定textarea模式
 	function setTextareaMode() {
@@ -196,13 +201,13 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 	}
 
 	$(window).ready(() => {
-		subMainListeners();
-		updateMessageView();
+		setReadyListener();
+		getSomeBoards();
 		setUpdateModal();
 	});
 
 	//初始化監聽器
-	function subMainListeners() {
+	function setReadyListener() {
 
 		//新增主留言
 		$("#subMain").click(() => {
@@ -219,7 +224,18 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 				url: "/MessageBoard/message/addMainMessage",
 				data: { 0: JSON.stringify(data) }
 			}).then(function (e) {
-				jsonArr = JSON.parse(e);
+				if (e === 'false') {
+					alert('新增錯誤');
+					return;
+				}
+				let jsonArr;
+				try {
+					jsonArr = JSON.parse(e);
+				} catch (err) {
+					alert('新增錯誤');
+					return;
+				}
+
 				let boardID = jsonArr.boardID;
 				let messageID = jsonArr.messageID;
 
@@ -241,21 +257,69 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 				}
 			});
 		});
+
+		//滾動監聽器
+		$(window).scroll(function (e) {
+			let windowBottom = $(this).height() + $(this).scrollTop();
+			console.log('window bottom' + windowBottom);
+			console.log('div ' + $('body').height());
+			if ((windowBottom > ($('body').height() * 0.7)) && !getBoardProcessing) {
+				getSomeBoards(lastBoardID);
+			}
+		});
 	}
 
 	//更新所有主留言板
-	function updateMessageView() {
-		$("#massageShow").empty();
+	// function updateMessageView() {
+	// 	$("#massageShow").empty();
+	// 	$.ajax({
+	// 		type: "GET",
+	// 		url: "/MessageBoard/message/getPublicBoard"
+	// 	}).then(function (e) {
+	// 		let jsonArr;
+	// 		try {
+	// 			jsonArr = JSON.parse(e);
+	// 		} catch (err) {
+	// 			alert('更新失敗');
+	// 		}
+
+	// 		for (let jsonObj of jsonArr) {
+	// 			getBoardMessages(jsonObj.boardID);
+	// 		}
+	// 	});
+	// }
+
+	//取得部份主留言
+	function getSomeBoards(id = -1) {
+		getBoardProcessing = true;
+		if (id <= 0) {
+			$("#massageShow").empty();
+		}
+
 		$.ajax({
-			type: "GET",
-			url: "/MessageBoard/message/getPublicBoard"
+			type: 'GET',
+			url: `/MessageBoard/message/getSomePublicBoards?id=${id}`
 		}).then(function (e) {
-			let jsonArr = JSON.parse(e);
-			for (let jsonObj of jsonArr) {
-				getBoardMessages(jsonObj._boardID);
+			if (e === 'false') {
+				alert('留言板取得錯誤');
+				return;
 			}
-			// alert($('body').height());
-			alert(clientHeight);
+
+			let jsonArr;
+			try {
+				jsonArr = JSON.parse(e);
+			} catch (err) {
+				alert('留言板取得錯誤');
+				return;
+			}
+
+			for (let i = 0; i < jsonArr.length; i++) {
+				if (i >= jsonArr.length - 1) {
+					lastBoardID = jsonArr[i].boardID;
+				}
+				getBoardMessages(jsonArr[i].boardID);
+			}
+			getBoardProcessing = false;
 		});
 	}
 
@@ -275,11 +339,10 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 				url: "/MessageBoard/message/updateMessage",
 				data: { 0: JSON.stringify(data) }
 			}).then(function (e) {
-				try {
-					let jsonObj = JSON.parse(e);
+				if (e === '1') {
 					getBoardMessages(updateBoardID, true);
 					$("#updateCloseBtn").trigger("click");
-				} catch (err) {
+				} else {
 					alert("更新失敗");
 				}
 			});
@@ -303,50 +366,62 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 			type: "GET",
 			url: `/MessageBoard/message/getBoardMessages?id=${boardID}`
 		}).then(function (e) {
-			let jsonMessageArr = JSON.parse(e);
+			let jsonMessageArr;
+			if (e === 'false') {
+				alert('取得失敗');
+				return;
+			}
+
+			try {
+				jsonMessageArr = JSON.parse(e);
+			} catch {
+				alert('取得失敗');
+				return;
+			}
+
 			for (let key in jsonMessageArr) {
-				let isMyself = (jsonMessageArr[key]._userID == userID);
-				let timeStr = getTiemDifference(jsonMessageArr[key]._changeDate);
+				let isMyself = (jsonMessageArr[key].userID == userID);
+				let timeStr = getTiemDifference(jsonMessageArr[key].changeDate);
 				let isBoard = (key == 0);
 				if (isBoard) {
 					if (isUpdate) {
-						$(`#mainMessageShow${jsonMessageArr[key]._messageID}`).empty().append(
+						$(`#mainMessageShow${jsonMessageArr[key].messageID}`).empty().append(
 							getMainMessageView(
-								jsonMessageArr[key]._userID,
+								jsonMessageArr[key].userID,
 								boardID,
-								jsonMessageArr[key]._userName,
-								jsonMessageArr[key]._message,
+								jsonMessageArr[key].userName,
+								jsonMessageArr[key].message,
 								timeStr,
-								jsonMessageArr[key]._messageID,
+								jsonMessageArr[key].messageID,
 								isMyself)
 						);
 					} else {
 						$("#massageShow").append(getNewMainMessageView(
-							jsonMessageArr[key]._userID,
+							jsonMessageArr[key].userID,
 							boardID,
-							jsonMessageArr[key]._userName,
-							jsonMessageArr[key]._message,
+							jsonMessageArr[key].userName,
+							jsonMessageArr[key].message,
 							timeStr,
-							jsonMessageArr[key]._messageID,
+							jsonMessageArr[key].messageID,
 							isMyself));
 					}
 
 
 				} else {
 					$(`#boardMessage${boardID}`).append(getMessageView(
-						jsonMessageArr[key]._userID,
-						jsonMessageArr[key]._userName,
-						jsonMessageArr[key]._message,
+						jsonMessageArr[key].userID,
+						jsonMessageArr[key].userName,
+						jsonMessageArr[key].message,
 						timeStr,
-						jsonMessageArr[key]._messageID,
+						jsonMessageArr[key].messageID,
 						isMyself));
 				}
 
-				$(`#messageText${jsonMessageArr[key]._messageID}`).text(jsonMessageArr[key]._message);
+				$(`#messageText${jsonMessageArr[key].messageID}`).text(jsonMessageArr[key].message);
 
 				//如果是自己的就可以修改及刪除
 				if (isMyself) {
-					addDeleteAndUpdateListener(jsonMessageArr[key]._messageID, boardID, isBoard);
+					addDeleteAndUpdateListener(jsonMessageArr[key].messageID, boardID, isBoard);
 				}
 
 			}
@@ -375,18 +450,21 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 				url: "/MessageBoard/message/addMessage",
 				data: { 0: JSON.stringify(data) }
 			}).then(function (messageID) {
-				if (messageID >= 1) {
-					$(`#boardMessage${boardID}`).append(getMessageView(
-						userID,
-						userName,
-						message,
-						getTiemDifference(new Date()),
-						messageID,
-						true));
-					addDeleteAndUpdateListener(messageID, boardID);
-					$(`#messageText${messageID}`).text(message);
-					$(`#addMessage${boardID}`).val("").trigger('input');
+				if (messageID === 'false') {
+					alert('新增錯誤');
+					return;
 				}
+
+				$(`#boardMessage${boardID}`).append(getMessageView(
+					userID,
+					userName,
+					message,
+					getTiemDifference(new Date()),
+					messageID,
+					true));
+				addDeleteAndUpdateListener(messageID, boardID);
+				$(`#messageText${messageID}`).text(message);
+				$(`#addMessage${boardID}`).val("").trigger('input');
 			});
 		});
 		setTextareaMode();
@@ -405,7 +483,19 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 				url: "/MessageBoard/message/deleteMessage",
 				data: { 0: messageID }
 			}).then(function (e) {
-				let jsonArr = JSON.parse(e);
+				if (e === 'false') {
+					alert('刪除失敗');
+					return;
+				}
+
+				let jsonArr;
+				try {
+					jsonArr = JSON.parse(e);
+				} catch (err) {
+					alert('刪除發生錯誤');
+					return;
+				}
+
 				switch (key = Object.keys(jsonArr)[0]) {
 					case "message":
 						$(`#message${jsonArr[key]}`).remove();
@@ -440,7 +530,7 @@ function content_5f69cb32b1f437_53398714 (Smarty_Internal_Template $_smarty_tpl)
 
 	<?php $_smarty_tpl->_subTemplateRender('file:./navigationBar.html', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
-
+	<div class="blank"></div>
 	<main class="container">
 
 		<div class="row">
