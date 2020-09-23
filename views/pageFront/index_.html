@@ -161,6 +161,16 @@
 		return Math.floor(time) + "月前";
 	}
 
+	//檢查訊息送出格式
+	function checkMessageText(text) {
+		let aaa = "sss";
+		aaa.trim().length;
+		if (text.trim().length <= 0) {
+			return false;
+		}
+		return true;
+	}
+
 	$(window).ready(() => {
 		setReadyListener();
 		getSomeBoards();
@@ -180,6 +190,12 @@
 				'board': board,
 				'message': message
 			};
+
+			if (!checkMessageText(message.message)) {
+				alert('請輸入留言');
+				return;
+			}
+
 			$.ajax({
 				type: "POST",
 				url: "/MessageBoard/message/addMainMessage",
@@ -211,7 +227,7 @@
 						true
 					));
 					$(`#messageText${messageID}`).text(message.message);
-					addMessageInputGrid(boardID);
+					addMainMessageInputGrid(boardID);
 					addDeleteAndUpdateListener(messageID, boardID, true);
 					$("#mainMessage").val("").trigger('input');
 
@@ -270,11 +286,15 @@
 		//修改送出
 		$("#updateSubBtn").click(() => {
 			let message = $("#updateMessageText").val();
-
 			let data = {
 				"messageID": updateMessageID,
 				"message": message
 			};
+
+			if (!checkMessageText(message)) {
+				alert('請輸入留言');
+				return;
+			}
 
 			$.ajax({
 				type: "PUT",
@@ -384,13 +404,14 @@
 
 			//新增輸入面板
 			if ('{{$isLogin}}' === '1' && lastMessageID === -1) {
-				addMessageInputGrid(boardID);
+				addMainMessageInputGrid(boardID);
 			}
 		});
 
 	}
 
-	function addMessageInputGrid(boardID) {
+	//新增留雃版輸入格
+	function addMainMessageInputGrid(boardID) {
 		$(`#messageInputGrid${boardID}`).append(getInputGridMessageView(boardID));
 		$(`#subMessage${boardID}`).click(() => {
 			let message = $(`#addMessage${boardID}`).val();
@@ -399,6 +420,11 @@
 				'boardID': boardID,
 				'message': message
 			};
+
+			if (!checkMessageText(message)) {
+				alert('請輸入留言');
+				return;
+			}
 
 			$.ajax({
 				type: "POST",

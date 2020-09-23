@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-23 11:48:11
+/* Smarty version 3.1.34-dev-7, created on 2020-09-23 12:18:01
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f6b19db7ec1a4_32487900',
+  'unifunc' => 'content_5f6b20d9dcfbe5_63847083',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '2d01ea7aaec70d79310c521b2a42841a2ed34100' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html',
-      1 => 1600854489,
+      1 => 1600856280,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -200,6 +200,16 @@ function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl)
 		return Math.floor(time) + "月前";
 	}
 
+	//檢查訊息送出格式
+	function checkMessageText(text) {
+		let aaa = "sss";
+		aaa.trim().length;
+		if (text.trim().length <= 0) {
+			return false;
+		}
+		return true;
+	}
+
 	$(window).ready(() => {
 		setReadyListener();
 		getSomeBoards();
@@ -219,6 +229,12 @@ function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl)
 				'board': board,
 				'message': message
 			};
+
+			if (!checkMessageText(message.message)) {
+				alert('請輸入留言');
+				return;
+			}
+
 			$.ajax({
 				type: "POST",
 				url: "/MessageBoard/message/addMainMessage",
@@ -250,7 +266,7 @@ function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl)
 						true
 					));
 					$(`#messageText${messageID}`).text(message.message);
-					addMessageInputGrid(boardID);
+					addMainMessageInputGrid(boardID);
 					addDeleteAndUpdateListener(messageID, boardID, true);
 					$("#mainMessage").val("").trigger('input');
 
@@ -309,11 +325,15 @@ function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl)
 		//修改送出
 		$("#updateSubBtn").click(() => {
 			let message = $("#updateMessageText").val();
-
 			let data = {
 				"messageID": updateMessageID,
 				"message": message
 			};
+
+			if (!checkMessageText(message)) {
+				alert('請輸入留言');
+				return;
+			}
 
 			$.ajax({
 				type: "PUT",
@@ -424,13 +444,14 @@ function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl)
 			//新增輸入面板
 			if ('<?php echo $_smarty_tpl->tpl_vars['isLogin']->value;?>
 ' === '1' && lastMessageID === -1) {
-				addMessageInputGrid(boardID);
+				addMainMessageInputGrid(boardID);
 			}
 		});
 
 	}
 
-	function addMessageInputGrid(boardID) {
+	//新增留雃版輸入格
+	function addMainMessageInputGrid(boardID) {
 		$(`#messageInputGrid${boardID}`).append(getInputGridMessageView(boardID));
 		$(`#subMessage${boardID}`).click(() => {
 			let message = $(`#addMessage${boardID}`).val();
@@ -439,6 +460,11 @@ function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl)
 				'boardID': boardID,
 				'message': message
 			};
+
+			if (!checkMessageText(message)) {
+				alert('請輸入留言');
+				return;
+			}
 
 			$.ajax({
 				type: "POST",
