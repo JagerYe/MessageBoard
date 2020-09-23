@@ -72,6 +72,29 @@ class MessageDAO_PDO implements MessageDAO
         return $request;
     }
 
+    //取得單留言板部分留言
+    public function getSomeMessageByBordID($boardID, $startMessageID = -1)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $sth = $dbh->prepare("SELECT `messageID`, `boardID`, mes.`userID`, mes.`creationDate`, mes.`changeDate`, `message`, `userName` FROM `Messages` AS mes
+                                    INNER JOIN `Members` AS mem ON mes.`userID`=mem.`userID`
+                                    WHERE `boardID`=:boardID && `messageID`>:messageID
+                                    ORDER BY `messageID`
+                                    LIMIT 5;");
+            $sth->bindParam("boardID", $boardID);
+            $sth->bindParam("messageID", $startMessageID);
+            $sth->execute();
+            $request = $sth->fetchAll(PDO::FETCH_ASSOC);
+            $sth = null;
+        } catch (PDOException $err) {
+            $dbh->rollBack();
+            return 'false';
+        }
+        $dbh = null;
+        return $request;
+    }
+
     //取得一個的留言
     public function getOneMessageByID($id)
     {
@@ -87,6 +110,27 @@ class MessageDAO_PDO implements MessageDAO
             $sth = null;
         } catch (PDOException $err) {
             return false;
+        }
+        $dbh = null;
+        return $request;
+    }
+
+    //取得單留言板的第一筆及最後一筆MessageID
+    public function getBoardFirstAndLastMessageIDByBoardID($boardID)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $sth = $dbh->prepare("SELECT `messageID` AS `firstID`, 
+                                        (SELECT `messageID` FROM `Messages`
+                                        WHERE `boardID`=m1.`boardID`
+                                        ORDER BY `messageID` DESC LIMIT 1) AS `lastID`
+                                    FROM `Messages` AS m1 WHERE `boardID`=:boardID ORDER BY `messageID` LIMIT 1;");
+            $sth->bindParam("boardID", $boardID);
+            $sth->execute();
+            $request = $sth->fetch(PDO::FETCH_ASSOC);
+            $sth = null;
+        } catch (PDOException $err) {
+            return 'false';
         }
         $dbh = null;
         return $request;

@@ -64,6 +64,14 @@ class MessageController extends Controller
         return json_encode(MessageService::getDAO()->getAllMessageByBoardID($id));
     }
 
+    public function getSomeBoardMessages($boardID, $startMessageID = -1)
+    {
+        $messageDAO = MessageService::getDAO();
+        $request = $messageDAO->getSomeMessageByBordID($boardID, $startMessageID);
+        $request['bothEnds'] = $messageDAO->getBoardFirstAndLastMessageIDByBoardID($boardID);
+        return json_encode($request);
+    }
+
     public function deleteMessage($id, $requestMethod)
     {
         $messageDAO = MessageService::getDAO();

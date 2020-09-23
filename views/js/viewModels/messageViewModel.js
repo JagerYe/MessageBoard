@@ -64,3 +64,7 @@ function getInputGridMessageView(id, message = "", isUpdate = false) {
                 <div class="col-xs-2"><button class="btn btn-success" id="subMessage${id}">送出</button></div>
             </div>`;
 }
+
+function getShowMoreMessageButton(id){
+    return `<div class="row oneMessage btn-default" id="showMoreMessage${id}"><a>想看更多嗎？</a></div>`;
+}

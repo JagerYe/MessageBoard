@@ -223,32 +223,12 @@
 		$(window).scroll(function (e) {
 			let windowBottom = $(this).height() + $(this).scrollTop();
 			console.log('window bottom' + windowBottom);
-			console.log('div ' + $('body').height());
+			console.log('body ' + $('body').height());
 			if ((windowBottom > ($('body').height() * 0.7)) && !getBoardProcessing) {
 				getSomeBoards(lastBoardID);
 			}
 		});
 	}
-
-	//更新所有主留言板
-	// function updateMessageView() {
-	// 	$("#massageShow").empty();
-	// 	$.ajax({
-	// 		type: "GET",
-	// 		url: "/MessageBoard/message/getPublicBoard"
-	// 	}).then(function (e) {
-	// 		let jsonArr;
-	// 		try {
-	// 			jsonArr = JSON.parse(e);
-	// 		} catch (err) {
-	// 			alert('更新失敗');
-	// 		}
-
-	// 		for (let jsonObj of jsonArr) {
-	// 			getBoardMessages(jsonObj.boardID);
-	// 		}
-	// 	});
-	// }
 
 	//取得部份主留言
 	function getSomeBoards(id = -1) {
@@ -289,10 +269,11 @@
 
 		//修改送出
 		$("#updateSubBtn").click(() => {
+			let message = $("#updateMessageText").val();
 
 			let data = {
 				"messageID": updateMessageID,
-				"message": $("#updateMessageText").val()
+				"message": message
 			};
 
 			$.ajax({
@@ -301,7 +282,8 @@
 				data: { 0: JSON.stringify(data) }
 			}).then(function (e) {
 				if (e === '1') {
-					getBoardMessages(updateBoardID, true);
+					// getBoardMessages(updateBoardID, true);
+					$(`#messageText${updateMessageID}`).text(message);
 					$("#updateCloseBtn").trigger("click");
 				} else {
 					alert("更新失敗");
@@ -321,11 +303,12 @@
 	}
 
 	//更新單一留言板
-	function getBoardMessages(boardID, isUpdate = false) {
+	function getBoardMessages(boardID, isUpdate = false, lastMessageID = -1) {
+		$(`#showMoreMessage${boardID}`).remove();
 
 		$.ajax({
 			type: "GET",
-			url: `/MessageBoard/message/getBoardMessages?id=${boardID}`
+			url: `/MessageBoard/message/getSomeBoardMessages?id=${boardID}&lastMessageID=${lastMessageID}`
 		}).then(function (e) {
 			let jsonMessageArr;
 			if (e === 'false') {
@@ -340,10 +323,15 @@
 				return;
 			}
 
+			let bothEnds = jsonMessageArr['bothEnds'];
+			delete jsonMessageArr['bothEnds'];
+			let lastID;
+
 			for (let key in jsonMessageArr) {
 				let isMyself = (jsonMessageArr[key].userID == userID);
 				let timeStr = getTiemDifference(jsonMessageArr[key].changeDate);
-				let isBoard = (key == 0);
+				let isBoard = (bothEnds.firstID === jsonMessageArr[key].messageID);
+				lastID = jsonMessageArr[key].messageID;
 				if (isBoard) {
 					if (isUpdate) {
 						$(`#mainMessageShow${jsonMessageArr[key].messageID}`).empty().append(
@@ -387,8 +375,15 @@
 
 			}
 
+			if (bothEnds.lastID !== lastID) {
+				$(`#boardMessage${boardID}`).append(getShowMoreMessageButton(boardID));
+				$(`#showMoreMessage${boardID}`).click(() => {
+					getBoardMessages(boardID, false, lastID);
+				});
+			}
+
 			//新增輸入面板
-			if ('{{$isLogin}}' === '1') {
+			if ('{{$isLogin}}' === '1' && lastMessageID === -1) {
 				addMessageInputGrid(boardID);
 			}
 		});

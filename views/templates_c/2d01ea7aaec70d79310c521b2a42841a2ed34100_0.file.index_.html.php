@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-23 08:46:40
+/* Smarty version 3.1.34-dev-7, created on 2020-09-23 11:48:11
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f6aef50885ca3_83138105',
+  'unifunc' => 'content_5f6b19db7ec1a4_32487900',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '2d01ea7aaec70d79310c521b2a42841a2ed34100' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html',
-      1 => 1600841124,
+      1 => 1600854489,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6b19db7ec1a4_32487900 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -262,32 +262,12 @@ function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl)
 		$(window).scroll(function (e) {
 			let windowBottom = $(this).height() + $(this).scrollTop();
 			console.log('window bottom' + windowBottom);
-			console.log('div ' + $('body').height());
+			console.log('body ' + $('body').height());
 			if ((windowBottom > ($('body').height() * 0.7)) && !getBoardProcessing) {
 				getSomeBoards(lastBoardID);
 			}
 		});
 	}
-
-	//更新所有主留言板
-	// function updateMessageView() {
-	// 	$("#massageShow").empty();
-	// 	$.ajax({
-	// 		type: "GET",
-	// 		url: "/MessageBoard/message/getPublicBoard"
-	// 	}).then(function (e) {
-	// 		let jsonArr;
-	// 		try {
-	// 			jsonArr = JSON.parse(e);
-	// 		} catch (err) {
-	// 			alert('更新失敗');
-	// 		}
-
-	// 		for (let jsonObj of jsonArr) {
-	// 			getBoardMessages(jsonObj.boardID);
-	// 		}
-	// 	});
-	// }
 
 	//取得部份主留言
 	function getSomeBoards(id = -1) {
@@ -328,10 +308,11 @@ function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl)
 
 		//修改送出
 		$("#updateSubBtn").click(() => {
+			let message = $("#updateMessageText").val();
 
 			let data = {
 				"messageID": updateMessageID,
-				"message": $("#updateMessageText").val()
+				"message": message
 			};
 
 			$.ajax({
@@ -340,7 +321,8 @@ function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl)
 				data: { 0: JSON.stringify(data) }
 			}).then(function (e) {
 				if (e === '1') {
-					getBoardMessages(updateBoardID, true);
+					// getBoardMessages(updateBoardID, true);
+					$(`#messageText${updateMessageID}`).text(message);
 					$("#updateCloseBtn").trigger("click");
 				} else {
 					alert("更新失敗");
@@ -360,11 +342,12 @@ function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl)
 	}
 
 	//更新單一留言板
-	function getBoardMessages(boardID, isUpdate = false) {
+	function getBoardMessages(boardID, isUpdate = false, lastMessageID = -1) {
+		$(`#showMoreMessage${boardID}`).remove();
 
 		$.ajax({
 			type: "GET",
-			url: `/MessageBoard/message/getBoardMessages?id=${boardID}`
+			url: `/MessageBoard/message/getSomeBoardMessages?id=${boardID}&lastMessageID=${lastMessageID}`
 		}).then(function (e) {
 			let jsonMessageArr;
 			if (e === 'false') {
@@ -379,10 +362,15 @@ function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl)
 				return;
 			}
 
+			let bothEnds = jsonMessageArr['bothEnds'];
+			delete jsonMessageArr['bothEnds'];
+			let lastID;
+
 			for (let key in jsonMessageArr) {
 				let isMyself = (jsonMessageArr[key].userID == userID);
 				let timeStr = getTiemDifference(jsonMessageArr[key].changeDate);
-				let isBoard = (key == 0);
+				let isBoard = (bothEnds.firstID === jsonMessageArr[key].messageID);
+				lastID = jsonMessageArr[key].messageID;
 				if (isBoard) {
 					if (isUpdate) {
 						$(`#mainMessageShow${jsonMessageArr[key].messageID}`).empty().append(
@@ -426,9 +414,16 @@ function content_5f6aef50885ca3_83138105 (Smarty_Internal_Template $_smarty_tpl)
 
 			}
 
+			if (bothEnds.lastID !== lastID) {
+				$(`#boardMessage${boardID}`).append(getShowMoreMessageButton(boardID));
+				$(`#showMoreMessage${boardID}`).click(() => {
+					getBoardMessages(boardID, false, lastID);
+				});
+			}
+
 			//新增輸入面板
 			if ('<?php echo $_smarty_tpl->tpl_vars['isLogin']->value;?>
-' === '1') {
+' === '1' && lastMessageID === -1) {
 				addMessageInputGrid(boardID);
 			}
 		});
