@@ -79,6 +79,27 @@ class MemberDAO_PDO implements MemberDAO
         return true;
     }
 
+    //更新圖片
+    public function updateImg($userID, $img)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $dbh->beginTransaction();
+            $sth = $dbh->prepare("UPDATE `Members` SET `changeDate`=NOW(),`image`=LOAD_FILE(:image)
+                                    WHERE `userID`=:userID;");
+            $sth->bindParam("userID", $userID);
+            $sth->bindParam("image", $img);
+            $sth->execute();
+            $dbh->commit();
+            $sth = null;
+        } catch (PDOException $err) {
+            $dbh->rollBack();
+            return false;
+        }
+        $dbh = null;
+        return true;
+    }
+
     public function getOneMemberByUserAccount($userAccount)
     {
         try {
@@ -109,6 +130,22 @@ class MemberDAO_PDO implements MemberDAO
         }
         $dbh = null;
         return $request;
+    }
+
+    public function getImgByID($id)
+    {
+        try {
+            $dbh = Config::getDBConnect();
+            $sth = $dbh->prepare("SELECT `image` FROM `Members` WHERE `userID`=:userID;");
+            $sth->bindParam("userID", $id);
+            $sth->execute();
+            $request = $sth->fetch(PDO::FETCH_NUM);
+            $sth = null;
+        } catch (PDOException $err) {
+            return null;
+        }
+        $dbh = null;
+        return isset($request['0']) ? $request['0'] : null;
     }
 
     public function doLogin($account, $password)

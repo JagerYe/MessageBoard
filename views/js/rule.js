@@ -2,4 +2,5 @@ let emailRule = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za
 let accountRule = /\w{6,30}/;
 let passwordRule = /\w{6,30}/;
 let phoneRule = /\d{10}/;
-let nameRule = /\w+/;
+let nameRule = /\u+/;
+let imageTypeRule = /image.*/;

@@ -7,8 +7,8 @@ function getNewMainMessageView(userID, boardID, name, message, time, messageID =
 
 function getMainMessageView(userID, boardID, name, message, time, messageID = null, isMyself = false) {
     return `<div class="row">
-                <!-- <img class="col-xs-1" src="" alt="" srcset=""> -->
-                <h4><a href="?userID=${userID}">${name}</a></h4>
+                <img class="col-xs-2" src="/MessageBoard/member/getUserImg?id=${userID}" onerror="javascript:this.src='/MessageBoard/views/img/shadow.png'">
+                <h4 class="col-xs-10"><a href="?userID=${userID}">${name}</a></h4>
                 ${myMessageButton(isMyself, messageID)}
             </div>
 
@@ -28,8 +28,8 @@ function getMainMessageView(userID, boardID, name, message, time, messageID = nu
 //主留言下的副留言
 function getMessageView(userID, name, message, time, messageID = null, isMyself = false) {
     return `<div class="row oneMessage btn-default" id="message${messageID}">
-                <!-- <img class="col-xs-1" src="" alt="" srcset=""> -->
-                <div class="col-xs-11">
+                <img class="col-xs-2" src="/MessageBoard/member/getUserImg?id=${userID}" onerror="javascript:this.src='/MessageBoard/views/img/shadow.png'">
+                <div class="col-xs-10">
                     <div class="row">
                         <a href="?userID=${userID}">${name}</a>
                         ${myMessageButton(isMyself, messageID)}

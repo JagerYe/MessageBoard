@@ -94,6 +94,26 @@ class MemberController extends Controller
         }
     }
 
+    public function updateSelfImage($userID, $password, $requestMethod, $image, $imageType)
+    {
+        $memberDAO = MemberService::getDAO();
+        if (
+            !isset($_SESSION['userID'])
+            ||
+            ($requestMethod !== 'POST')
+            ||
+            ($userID !== $_SESSION['userID'])
+            ||
+            !preg_match('/image.*/', $imageType)
+            ||
+            !$memberDAO->checkPassword($_SESSION['userID'], $password)
+        ) {
+            return false;
+        }
+
+        return $memberDAO->updateImg($_SESSION['userID'], $image) && unlink($image);
+    }
+
     public function login($userAccount, $password)
     {
         if (MemberService::getDAO()->doLogin($userAccount, $password)) {
@@ -138,8 +158,12 @@ class MemberController extends Controller
 
     public function getMemberSelfData()
     {
-
         return json_encode(MemberService::getDAO()->getOneMemberByID($_SESSION['userID']));
+    }
+
+    public function getUserImg($id)
+    {
+        return MemberService::getDAO()->getImgByID($id);
     }
 
     public function getCreateView()

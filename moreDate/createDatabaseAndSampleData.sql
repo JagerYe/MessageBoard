@@ -12,6 +12,7 @@ CREATE TABLE `Members`(
     `userPhone` VARCHAR(20) NOT NULL,
     `creationDate` datetime NOT NULL,
     `changeDate` datetime NOT NULL,
+    `image` BLOB,
     PRIMARY KEY (`userID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

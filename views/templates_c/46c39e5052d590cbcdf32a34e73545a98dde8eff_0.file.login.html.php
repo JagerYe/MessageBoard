@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-23 08:37:34
+/* Smarty version 3.1.34-dev-7, created on 2020-09-24 05:52:42
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/login.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f6aed2e6e6943_42271931',
+  'unifunc' => 'content_5f6c180a920280_81943218',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '46c39e5052d590cbcdf32a34e73545a98dde8eff' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/login.html',
-      1 => 1600678496,
+      1 => 1600919544,
       2 => 'file',
     ),
   ),
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_5f6aed2e6e6943_42271931 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6c180a920280_81943218 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!DOCTYPE html>
 <html>
 
@@ -80,7 +80,7 @@ function content_5f6aed2e6e6943_42271931 (Smarty_Internal_Template $_smarty_tpl)
 			type: "GET",
 			url: "/MessageBoard/member/getSessionUserName"
 		}).then(function (e) {
-			if (e === 'false') {
+			if (e !== '"false"') {
 				$("body").css("display", "inline");
 			} else {
 				$.ajax({

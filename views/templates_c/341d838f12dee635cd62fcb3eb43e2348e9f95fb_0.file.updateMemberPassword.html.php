@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-23 08:46:33
+/* Smarty version 3.1.34-dev-7, created on 2020-09-24 08:42:42
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberPassword.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f6aef498ad705_66895082',
+  'unifunc' => 'content_5f6c3fe2ed9d51_33337488',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '341d838f12dee635cd62fcb3eb43e2348e9f95fb' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberPassword.html',
-      1 => 1600843580,
+      1 => 1600919258,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f6aef498ad705_66895082 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6c3fe2ed9d51_33337488 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -137,7 +137,7 @@ function content_5f6aef498ad705_66895082 (Smarty_Internal_Template $_smarty_tpl)
 			type: 'GET',
 			url: '/MessageBoard/member/getSessionUserID'
 		}).then(function (e) {
-			if (e === 'false') {
+			if (e === '"false"') {
 				window.location.href = "/MessageBoard/member/getLoginView";
 			}
 			$("body").css("display", "inline");

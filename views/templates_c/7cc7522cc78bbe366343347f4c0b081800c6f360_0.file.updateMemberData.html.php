@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-23 08:37:33
+/* Smarty version 3.1.34-dev-7, created on 2020-09-24 11:19:17
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberData.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f6aed2db15382_61579095',
+  'unifunc' => 'content_5f6c64957b8466_44002321',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '7cc7522cc78bbe366343347f4c0b081800c6f360' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/updateMemberData.html',
-      1 => 1600842670,
+      1 => 1600939155,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6c64957b8466_44002321 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -83,6 +83,14 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 	.errMas {
 		color: red;
 	}
+
+	img {
+		width: 100%;
+		height: 100%;
+		max-width: 150px;
+		max-height: 150px;
+		;
+	}
 </style>
 
 <?php echo '<script'; ?>
@@ -95,9 +103,13 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 >
 	let userID = '<?php echo $_smarty_tpl->tpl_vars['isLogin']->value ? $_smarty_tpl->tpl_vars['userID']->value : -1;?>
 ';
-	if(userID<0){
+	if (userID < 0) {
 		window.location.href = "/MessageBoard/member/getLoginView";
 	}
+
+	let updateData = false;
+	let updateImg = false;
+	let updateErr = false;
 
 	function getCheckNameMessage(value) {
 		let checkMessage = $('#nameCheckMessage');
@@ -106,7 +118,7 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 
 		checkMessage.empty();
 		input.removeClass('borderBottomRed');
-		if (!value.match(nameRule)) {
+		if (value.trim().length <= 0) {
 			checkMessage.text(returnStr);
 			input.addClass('borderBottomRed');
 			return returnStr;
@@ -151,12 +163,28 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 
 		checkMessage.empty();
 		input.removeClass('borderBottomRed');
-		if (!value.match(nameRule)) {
+		if (!value.match(passwordRule)) {
 			checkMessage.text(returnStr);
 			input.addClass('borderBottomRed');
 			return returnStr;
 		}
 		return "";
+	}
+
+	function getCheckImage(value) {
+		return value && value.type.match(imageTypeRule);
+	}
+
+	function checkUpdateOk() {
+		if (updateErr) {
+			history.go(0);
+		}
+		if (updateData && updateImg) {
+			alert("更新成功");
+		} else {
+			setTimeout(checkUpdateOk, 10);
+		}
+		history.go(0);
 	}
 
 	$(window).ready(() => {
@@ -178,6 +206,25 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 
 		$("#userPassword").change(function () {
 			getCheckPasswordMessage(this.value);
+		});
+
+		$("#clearImage").click(() => {
+			$("#inputImage").val("");
+			$("#userImage").attr('src', `/MessageBoard/member/getUserImg?id=${userID}`);
+		});
+
+		$("#inputImage").change(function () {
+			if (this.files && getCheckImage(this.files[0])) {
+				let reader = new FileReader();
+				reader.onload = function (e) {
+					$("#userImage").attr('src', e.target.result);
+				}
+				// reader.readAsDataURL(this);
+				reader.readAsDataURL(this.files[0]);
+			} else {
+				alert("請選擇正確的檔案格式");
+				$("#userImage").attr('src', `/MessageBoard/member/getUserImg?id=${userID}`);
+			}
 		});
 
 		//送出按鈕事件
@@ -213,12 +260,38 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 				data: subData
 			}).then(function (e) {
 				if (e === "1") {
-					alert("更新成功");
+					updateData = true;
 				} else {
+					updateErr = true;
 					alert("更新失敗，將重新整理頁面");
 				}
-				history.go(0);
 			});
+
+			if ((img = $("#inputImage").get(0).files[0]) && getCheckImage(img)) {
+				let putData = new FormData();
+				putData.append("userID", userID);
+				putData.append("password", $("#userPassword").val());
+				putData.append("img", img);
+				$.ajax({
+					type: "POST",
+					url: "/MessageBoard/member/updateSelfImage",
+					data: putData,
+					cache: false,
+					contentType: false,
+					processData: false
+				}).then(function (e) {
+					if (e === '1') {
+						updateImg = true;
+					} else {
+						updateErr = true;
+						alert('圖片上傳失敗');
+					}
+				});
+			} else {
+				updateImg = true;
+			}
+
+			setTimeout(checkUpdateOk, 10);
 		});
 
 	});
@@ -226,7 +299,7 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 >
 
 <body>
-<?php if ($_smarty_tpl->tpl_vars['isLogin']->value) {?>
+	<?php if ($_smarty_tpl->tpl_vars['isLogin']->value) {?>
 	<?php $_smarty_tpl->_subTemplateRender('file:./navigationBar.html', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, 0, $_smarty_tpl->cache_lifetime, array(), 0, false);
 ?>
 	<div class="blank"></div>
@@ -237,6 +310,17 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 
 				<form>
 					<div id="mainShow">
+						<div>
+							<img src="/MessageBoard/member/getUserImg?id=<?php echo $_smarty_tpl->tpl_vars['isLogin']->value ? $_smarty_tpl->tpl_vars['userID']->value : -1;?>
+" id="userImage"
+								onerror="javascript:this.src='/MessageBoard/views/img/gravatar.jpg'">
+							<p>更換頭像：</p>
+							<input id="inputImage" type="file" accept="image/*">
+							<button id="clearImage" type="button">清除圖片</button>
+							<br>
+						</div>
+						<!-- form-group// -->
+
 						<div class="form-group input-group">
 							<div class="input-group-prepend">
 								<span class="input-group-text"> <i class="fa fa-user"></i> </span>
@@ -290,7 +374,7 @@ function content_5f6aed2db15382_61579095 (Smarty_Internal_Template $_smarty_tpl)
 		</div> <!-- card.// -->
 
 	</main><!-- /.container -->
-<?php }?>
+	<?php }?>
 </body>
 
 </html><?php }

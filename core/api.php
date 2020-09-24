@@ -33,6 +33,14 @@ class Api
         }
         $values[] = $requestMethod;
 
+        if (isset($_FILES['img'])) {
+            $filePath = $_FILES['img']['tmp_name'];
+            $fileNewPath = substr($filePath, 0, strrpos($filePath, '/') + 1) . $_FILES['img']['name'];
+            move_uploaded_file($filePath, $fileNewPath);
+            $values[] = $fileNewPath;
+            $values[] = $_FILES['img']['type'];
+        }
+
         echo call_user_func_array(array($controller, $methodName), $values);
     }
 }

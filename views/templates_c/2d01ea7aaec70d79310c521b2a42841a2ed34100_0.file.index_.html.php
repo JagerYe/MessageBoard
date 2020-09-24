@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-23 12:18:01
+/* Smarty version 3.1.34-dev-7, created on 2020-09-24 09:16:04
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f6b20d9dcfbe5_63847083',
+  'unifunc' => 'content_5f6c47b4d49939_77035534',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '2d01ea7aaec70d79310c521b2a42841a2ed34100' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html',
-      1 => 1600856280,
+      1 => 1600931763,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -103,7 +103,8 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 	}
 
 	.mainMessage button {
-		margin: 3px;
+		/* margin: 3px; */
+		margin-left: 3px;
 	}
 
 	.time {
@@ -125,8 +126,15 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 		padding: 0;
 	}
 
-	button {
-		padding: 0;
+	img {
+		width: 100%;
+		height: 100%;
+	}
+
+	.pull-right {
+		/* padding: 0; */
+		/* padding-left: 0;
+		padding-right: 0; */
 	}
 </style>
 
@@ -240,7 +248,7 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 				url: "/MessageBoard/message/addMainMessage",
 				data: { 0: JSON.stringify(data) }
 			}).then(function (e) {
-				if (e === 'false') {
+				if (e === '"false"') {
 					alert('新增錯誤');
 					return;
 				}
@@ -296,7 +304,7 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 			type: 'GET',
 			url: `/MessageBoard/message/getSomePublicBoards?id=${id}`
 		}).then(function (e) {
-			if (e === 'false') {
+			if (e === '"false"') {
 				alert('留言板取得錯誤');
 				return;
 			}
@@ -370,7 +378,7 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 			url: `/MessageBoard/message/getSomeBoardMessages?id=${boardID}&lastMessageID=${lastMessageID}`
 		}).then(function (e) {
 			let jsonMessageArr;
-			if (e === 'false') {
+			if (e === '"false"') {
 				alert('取得失敗');
 				return;
 			}
@@ -471,7 +479,7 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 				url: "/MessageBoard/message/addMessage",
 				data: { 0: JSON.stringify(data) }
 			}).then(function (messageID) {
-				if (messageID === 'false') {
+				if (messageID === '"false"') {
 					alert('新增錯誤');
 					return;
 				}
@@ -504,7 +512,7 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 				url: "/MessageBoard/message/deleteMessage",
 				data: { 0: messageID }
 			}).then(function (e) {
-				if (e === 'false') {
+				if (e === '"false"') {
 					alert('刪除失敗');
 					return;
 				}
@@ -603,7 +611,6 @@ function content_5f6b20d9dcfbe5_63847083 (Smarty_Internal_Template $_smarty_tpl)
 				</div>
 			</div>
 		</div>
-
 	</main><!-- /.container -->
 
 </body>
