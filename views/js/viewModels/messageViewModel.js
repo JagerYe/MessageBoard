@@ -8,8 +8,10 @@ function getNewMainMessageView(userID, boardID, name, message, time, messageID =
 function getMainMessageView(userID, boardID, name, message, time, messageID = null, isMyself = false) {
     return `<div class="row">
                 <img class="col-xs-2" src="/MessageBoard/member/getUserImg?id=${userID}" onerror="javascript:this.src='/MessageBoard/views/img/shadow.png'">
-                <h4 class="col-xs-10"><a href="?userID=${userID}">${name}</a></h4>
-                ${myMessageButton(isMyself, messageID)}
+                <h4 class="col-xs-4"><a href="?userID=${userID}">${name}</a></h4>
+                <div class="pull-right">
+                    ${myMessageButton(isMyself, messageID)}
+                </div>
             </div>
 
             <div class="row" id="text${messageID}">
@@ -22,17 +24,19 @@ function getMainMessageView(userID, boardID, name, message, time, messageID = nu
                 <div class="col-xs-10" id="boardMessage${boardID}"></div>
                 <div class="col-xs-1"></div>
             </div>
-            <dib id="messageInputGrid${boardID}"></div>`;
+            <dib class="row" id="messageInputGrid${boardID}"></div>`;
 }
 
 //主留言下的副留言
 function getMessageView(userID, name, message, time, messageID = null, isMyself = false) {
     return `<div class="row oneMessage btn-default" id="message${messageID}">
                 <img class="col-xs-2" src="/MessageBoard/member/getUserImg?id=${userID}" onerror="javascript:this.src='/MessageBoard/views/img/shadow.png'">
-                <div class="col-xs-10">
+                <div class="col-xs-10 oneAttachedMessage">
                     <div class="row">
-                        <a href="?userID=${userID}">${name}</a>
-                        ${myMessageButton(isMyself, messageID)}
+                        <a class="col-xs-" href="?userID=${userID}">${name}</a>
+                        <div class="pull-right">
+                            ${myMessageButton(isMyself, messageID)}
+                        </div>
                     </div>
                     <div class="row" id="text${messageID}">
                         <div class="col-xs-1"></div>
@@ -45,8 +49,8 @@ function getMessageView(userID, name, message, time, messageID = null, isMyself 
 
 function myMessageButton(isMyself, messageID) {
     return (isMyself) ?
-        `<button class="col-xs-2 btn btn-danger pull-right" id="deleteMessage${messageID}" type="button">刪除</button>
-        <button class="col-xs-2 btn btn-info pull-right" id="updateMessageBtn${messageID}" type="button" data-toggle="modal" data-target="#updateMessageModal">修改</button>`
+        `<button class="btn btn-danger" id="deleteMessage${messageID}" type="button">刪除</button>
+        <button class="btn btn-info" id="updateMessageBtn${messageID}" type="button" data-toggle="modal" data-target="#updateMessageModal">修改</button>`
         : "";
 }
 
@@ -60,8 +64,12 @@ function getInputGridMessageView(id, message = "", isUpdate = false) {
                 </div>`;
     }
     return `<div class="row inputGridMessage"">
-                <div class="col-xs-10"><textarea id="addMessage${id}" cols="30" rows="1"></textarea></div>
-                <div class="col-xs-2"><button class="btn btn-success" id="subMessage${id}">送出</button></div>
+                <div class="col-xs-1"></div>
+                <div class="col-xs-10 row">
+                    <div class="col-xs-10"><textarea id="addMessage${id}" cols="30" rows="1"></textarea></div>
+                    <div class="col-xs-2"><button class="btn btn-success" id="subMessage${id}">送出</button></div>
+                </div>
+                <div class="col-xs-1"></div>
             </div>`;
 }
 

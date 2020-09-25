@@ -48,7 +48,7 @@
 			type: "GET",
 			url: "/MessageBoard/member/getSessionUserName"
 		}).then(function (e) {
-			if (e !== '"false"') {
+			if (e === 'false') {
 				$("body").css("display", "inline");
 			} else {
 				$.ajax({

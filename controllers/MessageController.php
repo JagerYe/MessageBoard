@@ -99,7 +99,7 @@ class MessageController extends Controller
         $message->setMessage($json->message);
         $messageDAO = MessageService::getDAO();
 
-        if (!isset($_SESSION['empID']) && ($requestMethod != 'PUT' || $messageDAO->getOneMessageByID($message->getMessageID())['userID'] != $_SESSION['userID'])) {
+        if (!isset($_SESSION['empID']) && ($requestMethod != 'PUT' || $messageDAO->getOneMessageByID($message->getMessageID())['userID'] !== $_SESSION['userID'])) {
             return false;
         }
 

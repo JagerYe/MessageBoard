@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.34-dev-7, created on 2020-09-24 09:16:04
+/* Smarty version 3.1.34-dev-7, created on 2020-09-25 08:09:35
   from '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.34-dev-7',
-  'unifunc' => 'content_5f6c47b4d49939_77035534',
+  'unifunc' => 'content_5f6d899faab015_66940141',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '2d01ea7aaec70d79310c521b2a42841a2ed34100' => 
     array (
       0 => '/Applications/XAMPP/xamppfiles/htdocs/MessageBoard/views/pageFront/index_.html',
-      1 => 1600931763,
+      1 => 1601014173,
       2 => 'file',
     ),
   ),
@@ -21,7 +21,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
     'file:./navigationBar.html' => 1,
   ),
 ),false)) {
-function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5f6d899faab015_66940141 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!doctype html>
 <html lang="en">
 
@@ -72,10 +72,14 @@ function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl)
 <style>
 	.oneMessage {
 		margin: 5px;
+		padding: 0;
+		padding-right: 10px;
 	}
 
 	.row {
-		padding: 10px;
+		/* padding: 10px; */
+		margin: 5px;
+		width: 100%;
 	}
 
 	.newMessage {
@@ -107,10 +111,6 @@ function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl)
 		margin-left: 3px;
 	}
 
-	.time {
-		font-size: 5px;
-	}
-
 	/*文字自動換行*/
 	pre {
 		overflow-x: auto;
@@ -129,13 +129,28 @@ function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl)
 	img {
 		width: 100%;
 		height: 100%;
+		padding: 0;
 	}
 
-	.pull-right {
-		/* padding: 0; */
-		/* padding-left: 0;
-		padding-right: 0; */
+	.topImgBtn{
+		position: fixed;
+		bottom: 30px;
+		right: 30px;
+		background-color: black;
+		max-height: 30px;
+		max-width: 10px;
 	}
+
+	.mainShow{
+		width: 100%;
+		padding: 0;
+	}
+
+	.oneAttachedMessage{
+		padding: 0;
+		padding-right: 15px;
+	}
+
 </style>
 
 <?php echo '<script'; ?>
@@ -167,7 +182,7 @@ function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl)
 
 	//設定與現在的時間差
 	function getTiemDifference(date) {
-		let time = (new Date(new Date() - new Date(date))).getTime();
+		let time = (new Date(new Date() - new Date(date.toString().replace(/-/g, "/")))).getTime();
 		let count = 0;
 		time /= 1000;//秒
 
@@ -290,6 +305,13 @@ function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl)
 			if ((windowBottom > ($('body').height() * 0.7)) && !getBoardProcessing) {
 				getSomeBoards(lastBoardID);
 			}
+		});
+	
+		//回最頂按鈕
+		$(".topImgBtn").click(()=>{
+			$("html,body").animate({
+				scrollTop:0
+			},1000);
 		});
 	}
 
@@ -561,10 +583,11 @@ function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl)
 ?>
 	<div class="blank"></div>
 	<main class="container">
+		<img class="topImgBtn" src="/MessageBoard/views/img/top.png" alt="">
 
 		<div class="row">
-			<div class="col-xs-2"></div>
-			<div class="col-xs-8">
+			<!-- <div class="col-xs-2"></div> -->
+			<div class="col-xs-8 mainShow">
 				<?php if ($_smarty_tpl->tpl_vars['isLogin']->value === true) {?>
 				<div class="addMainMassage">
 					<h2>來說點什麼吧</h2>
@@ -578,7 +601,7 @@ function content_5f6c47b4d49939_77035534 (Smarty_Internal_Template $_smarty_tpl)
 
 				<div id="massageShow"></div>
 			</div>
-			<div class="col-xs-2"></div>
+			<!-- <div class="col-xs-2"></div> -->
 		</div>
 
 		<!-- Modal，用於修改訊息用-->
